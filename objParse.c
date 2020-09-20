@@ -196,9 +196,13 @@ int objParse(int argc, char* argv[]){
     // Assemble triangles
 
     // Make a point list
-    Tri triList[sizeof(pointList) / 3];
+    printf("%ld\n", sizeof(pointList));
+    int triListLength = (int)sizeof(pointList) / 3;
+    printf("%d\n", triListLength);
+    Tri triList[triListLength];
     int triInd = 0;
-    for (int i = 0; i < faceIndex; i= i + 3)
+
+    for (int i = 0; i < faceIndex; i = i + 3)
     {
         Tri newTri;
         newTri.p1 = pointList[faceList[i]];
@@ -207,7 +211,7 @@ int objParse(int argc, char* argv[]){
         triList[triInd] = newTri;
         triInd += 1;
     }
-    printf("Generated %ld triangles.\n", sizeof(triList));
+    printf("Generated %ld triangles.\n", sizeof(triList)/sizeof(triList[0]));
     return 0;
 
 }
