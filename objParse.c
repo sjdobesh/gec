@@ -5,15 +5,50 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <string.h>
+#include <time.h>
 
+// Type def our structs
+typedef struct Vec3D
+{
+    double x;
+    double y;
+    double z;
+    double w;
+}Vec3D;    
+
+typedef struct Tri
+{
+    Vec3D p1;
+    Vec3D p2;
+    Vec3D p3;
+}Tri;
+
+typedef struct Mesh
+{
+    Tri *triPtr;
+}Mesh;
+
+
+int objParse(int argc, char* argv[]);
 
 int main(int argc, char* argv[]){
+    clock_t start, end;
+    double cpu_time_used;
+
+    start = clock();
+    objParse(argc,argv);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Obj processed in %f seconds.\n", cpu_time_used);
+    return 0;
+}
+
+int objParse(int argc, char* argv[]){
 
     // Open file and create line buffer to read in contents
     FILE *fptr;
-    int bufferLength = 255;
+    int bufferLength = 64;
     char buffer[bufferLength];
     if ((fptr = fopen("./cube.obj","r")) == NULL)
     {
@@ -44,8 +79,11 @@ int main(int argc, char* argv[]){
     printf("Faces : %d\n", faces);
 
     // Make appropriately sized arrays
-    double vertList[verts];
-    int faceList[faces];
+    double vertList[verts * 3];
+    int faceList[faces * 3];
+
+    // Before reopening file, clear buffer just in case
+    memset(buffer, 0, sizeof(buffer));
 
     // Re open file
     if ((fptr = fopen("./cube.obj","r")) == NULL)
@@ -56,49 +94,54 @@ int main(int argc, char* argv[]){
 
     int vertIndex = 0;
     int faceIndex = 0;
+    const char delim[2] = " ";
     while (fgets(buffer, bufferLength, fptr))
     {
-        //split our buffer by space delimiter into tokens
-
-        
-        // Means split items will be added to vert list
+        // split our buffer by space delimiter into tokens
         if (buffer[0] ==  'v' && buffer[1] == ' ')
         {
-            char * token = strtok(buffer, " ");
+            char* token = strtok(buffer, delim);
+            printf("Dumping first token : %s\n", token);
             // dump first token item
-            token = strtok(NULL, " ");
+            token = strtok(NULL, delim);
             // while the line isn't empty
             while (token != NULL)
             {
+                //printf("%s\n", token);
+                char* temp;
+                temp = strdup(token);
+                printf("%s\n", temp);
                 // append items to array
-                char * end;
-                vertList[vertIndex] = strtod(token, &end);
+
+                char* end;
+                vertList[vertIndex] = strtod(temp, &end);
                 vertIndex += 1;
 
-                printf("%s\n", token);
 
                 // Get next token
-                token = strtok(NULL, " ");
+                token = strtok(NULL, delim);
             }
         }
         // otherwise add to face list
-        else if (buffer[0] ==  'f')
+        if (buffer[0] ==  'f')
         {
-            char * token = strtok(buffer, " ");
+            char* token = strtok(buffer, delim);
+            printf("Dumping first token : %s\n", token);
             // dump first token item
-            token = strtok(NULL, " ");
+            token = strtok(NULL, delim);
             // while the line isn't empty
             while (token != NULL)
             {
-                // still need to split v/vt/vn
-                char * subToken = strtok(token, "/");
+                printf("%s\n", token);
+                
                 // Only take the first one and
                 // append items to array
-                char * end;
-                printf("%s\n", subToken);
-                faceList[vertIndex] = atoi(subToken);
+                faceList[faceIndex] = atoi(token);
                 faceIndex += 1;
-                token = strtok(NULL, " ");
+
+
+                // Progress to next token
+                token = strtok(NULL, delim);
             }
         }
     }
@@ -108,17 +151,64 @@ int main(int argc, char* argv[]){
     // FILE PARSED, PRINT CONTENTS
 
     printf("\nPrinting vertex coordinates\n");
-    for (int i = 0; i < vertIndex+1; i++)
+    for (int i = 0; i < vertIndex; i++)
     {
+        if (i%3 == 0)
+        {
+            printf("\n");
+        }
         printf("%f\n", vertList[i]);
     }
     printf("\nPrinting face vertices\n");
-    for (int i = 0; i < faceIndex+1; i++)
+    for (int i = 0; i < faceIndex; i++)
     {
-        printf("%i\n", faceList[i]);
+        if (i%3 == 0)
+        {
+            printf("\n");
+        }
+        printf("%i ", faceList[i]);
     }
 
+    printf("\n");
 
+
+
+    // NOW PASS LISTS INTO TRI LIST
+
+    // Make a point list
+    Vec3D pointList[vertIndex / 3];
+    int pointInd = 0;
+    for (int i = 0; i < vertIndex; i= i + 3)
+    {
+        Vec3D p1;
+        p1.x = vertList[i];
+        p1.y = vertList[i + 1];
+        p1.z = vertList[i + 2];
+
+        // w stays 1 for now
+        p1.w = 1.0;
+
+        pointList[pointInd] = p1;
+        pointInd += 1;
+    }
+    printf("Generated %ld points.\n", sizeof(pointList));
+
+    // Assemble triangles
+
+    // Make a point list
+    Tri triList[sizeof(pointList) / 3];
+    int triInd = 0;
+    for (int i = 0; i < faceIndex; i= i + 3)
+    {
+        Tri newTri;
+        newTri.p1 = pointList[faceList[i]];
+        newTri.p2 = pointList[faceList[i + 1]];
+        newTri.p3 = pointList[faceList[i + 2]];
+        triList[triInd] = newTri;
+        triInd += 1;
+    }
+    printf("Generated %ld triangles.\n", sizeof(triList));
     return 0;
 
 }
+
