@@ -29,24 +29,38 @@ typedef struct Mesh
     Tri *triPtr;
 }Mesh;
 
+// prototypes
+Tri * objParse(int argc, char* argv[], Tri *triListPtr);
 
-int objParse(int argc, char* argv[]);
-
+// main
 int main(int argc, char* argv[]){
     clock_t start, end;
     double cpu_time_used;
 
     start = clock();
-    objParse(argc,argv);
+    Tri *triListPtr;
+    triListPtr = objParse(argc,argv, triListPtr);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("Obj processed in %f seconds.\n", cpu_time_used);
     return 0;
 }
 
-int objParse(int argc, char* argv[]){
+// objParser
+Tri * objParse(int argc, char* argv[], Tri *triListPtr){
 
     // Open file and create line buffer to read in contents
+    if (argc == 2)
+    {
+        printf("File Command : %s\n", argv[1]);
+    }
+    else
+    {
+        printf("No File Request.\n");
+    }
+    
+
+
     FILE *fptr;
     int bufferLength = 64;
     char buffer[bufferLength];
@@ -82,16 +96,26 @@ int objParse(int argc, char* argv[]){
     double vertList[verts * 3];
     int faceList[faces * 3];
 
-    // Before reopening file, clear buffer just in case
+    // Before reopening file, clear buffer
     memset(buffer, 0, sizeof(buffer));
 
     // Re open file
-    if ((fptr = fopen("./cube.obj","r")) == NULL)
+    if (argc == 2)
     {
-        printf("Error opening obj file");
-        exit(1);
+        if ((fptr = fopen(argv[1],"r")) == NULL)
+        {
+            printf("Error opening obj file");
+            exit(1);
+        }
     }
-
+    else
+    {
+        if ((fptr = fopen("cube.obj","r")) == NULL)
+        {
+            printf("Error opening obj file");
+            exit(1);
+        }
+    }
     int vertIndex = 0;
     int faceIndex = 0;
     const char delim[2] = " ";
@@ -126,8 +150,8 @@ int objParse(int argc, char* argv[]){
         if (buffer[0] ==  'f')
         {
             char* token = strtok(buffer, delim);
-            printf("Dumping first token : %s\n", token);
             // dump first token item
+            printf("Dumping first token : %s\n", token);
             token = strtok(NULL, delim);
             // while the line isn't empty
             while (token != NULL)
@@ -171,8 +195,6 @@ int objParse(int argc, char* argv[]){
 
     printf("\n");
 
-
-
     // NOW PASS LISTS INTO TRI LIST
 
     // Make a point list
@@ -212,7 +234,11 @@ int objParse(int argc, char* argv[]){
         triInd += 1;
     }
     printf("Generated %ld triangles.\n", sizeof(triList)/sizeof(triList[0]));
-    return 0;
+    triListPtr = triList;
 
+    // return a pointer to our list
+    return triListPtr;
 }
+
+
 
