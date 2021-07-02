@@ -1,0 +1,4 @@
+// RAY TRACE
+struct ray {
+
+};
