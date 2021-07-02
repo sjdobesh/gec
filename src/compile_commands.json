@@ -1,0 +1,57 @@
+[
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build",
+  "command": "/usr/bin/cc  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /usr/local/include/SDL2 -g -pthread -o CMakeFiles/photon.dir/src/main.c.o -c /home/s/Documents/Projects/Graphics/photon/src/main.c",
+  "file": "/home/s/Documents/Projects/Graphics/photon/src/main.c"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build",
+  "command": "/usr/bin/cc  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /usr/local/include/SDL2 -g -pthread -o CMakeFiles/photon.dir/src/rt.c.o -c /home/s/Documents/Projects/Graphics/photon/src/rt.c",
+  "file": "/home/s/Documents/Projects/Graphics/photon/src/rt.c"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build",
+  "command": "/usr/bin/cc  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /usr/local/include/SDL2 -g -pthread -o CMakeFiles/photon.dir/src/sdl_utils.c.o -c /home/s/Documents/Projects/Graphics/photon/src/sdl_utils.c",
+  "file": "/home/s/Documents/Projects/Graphics/photon/src/sdl_utils.c"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -g -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -pthread -std=gnu++11 -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/src/gmock_main.cc"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -I/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/include -I/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -g -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -pthread -std=gnu++11 -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googlemock/src/gmock-all.cc"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/googletest-build/googlemock/gtest",
+  "command": "/usr/bin/c++  -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -g -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -pthread -std=gnu++11 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/src/gtest_main.cc"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/googletest-build/googlemock/gtest",
+  "command": "/usr/bin/c++  -I/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -I/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -g -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -pthread -std=gnu++11 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/src/gtest-all.cc"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/test",
+  "command": "/usr/bin/cc  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -isystem /usr/local/include/SDL2 -g -pthread -o CMakeFiles/rt_tests.dir/__/src/rt.c.o -c /home/s/Documents/Projects/Graphics/photon/src/rt.c",
+  "file": "/home/s/Documents/Projects/Graphics/photon/src/rt.c"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/test",
+  "command": "/usr/bin/cc  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -isystem /usr/local/include/SDL2 -g -pthread -o CMakeFiles/rt_tests.dir/__/src/sdl_utils.c.o -c /home/s/Documents/Projects/Graphics/photon/src/sdl_utils.c",
+  "file": "/home/s/Documents/Projects/Graphics/photon/src/sdl_utils.c"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/test",
+  "command": "/usr/bin/c++  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -isystem /usr/local/include/SDL2 -g -pthread -std=gnu++11 -o CMakeFiles/rt_tests.dir/rt.cpp.o -c /home/s/Documents/Projects/Graphics/photon/test/rt.cpp",
+  "file": "/home/s/Documents/Projects/Graphics/photon/test/rt.cpp"
+},
+{
+  "directory": "/home/s/Documents/Projects/Graphics/photon/build/test",
+  "command": "/usr/bin/c++  -I/home/s/Documents/Projects/Graphics/photon/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest/include -isystem /home/s/Documents/Projects/Graphics/photon/build/googletest-src/googletest -isystem /usr/local/include/SDL2 -g -pthread -std=gnu++11 -o CMakeFiles/rt_tests.dir/main.cpp.o -c /home/s/Documents/Projects/Graphics/photon/test/main.cpp",
+  "file": "/home/s/Documents/Projects/Graphics/photon/test/main.cpp"
+}
+]

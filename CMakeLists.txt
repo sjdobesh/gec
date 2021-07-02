@@ -35,13 +35,16 @@ add_subdirectory(test)
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 file(GLOB sources
-  "${PROJECT_SOURCE_DIR}/include/module/*.hpp"
-  "${PROJECT_SOURCE_DIR}/src/*.cpp")
+  "${PROJECT_SOURCE_DIR}/include/module/*.h"
+  "${PROJECT_SOURCE_DIR}/src/*.c")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
+find_package(SDL2   REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLUT   REQUIRED)
+include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
+
+
 add_executable(photon ${sources})
-
-find_package(SDL2 REQUIRED)
-
-target_link_libraries(photon SDL2::Main m -static-libgcc -static-libstdc++)
+target_link_libraries(photon OpenGL::GL GLUT::GLUT SDL2::Main m -static-libgcc -static-libstdc++)
