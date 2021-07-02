@@ -35,8 +35,8 @@ add_subdirectory(test)
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 file(GLOB sources
-  "${PROJECT_SOURCE_DIR}/include/module/*.h"
-  "${PROJECT_SOURCE_DIR}/src/*.c")
+  "${PROJECT_SOURCE_DIR}/include/module/*.hpp"
+  "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
