@@ -42,9 +42,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 find_package(SDL2   REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLUT   REQUIRED)
-include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
+find_package(GLEW   REQUIRED)
+include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLEW_INCLUDE_DIRS} )
 
 
 add_executable(photon ${sources})
-target_link_libraries(photon OpenGL::GL GLUT::GLUT SDL2::Main m -static-libgcc -static-libstdc++)
+target_link_libraries(photon OpenGL::GL GLEW::GLEW SDL2::Main m -static-libgcc -static-libstdc++)
