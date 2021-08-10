@@ -18,11 +18,6 @@
 // prototypes
 
 int init();
-int render();
-int clean();
-int init_shaders();
-int init_geometry();
-int init_textures();
 
 // Test quad //-------------------------
 const GLfloat verts[6][4] = {

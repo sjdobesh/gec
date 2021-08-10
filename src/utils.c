@@ -50,7 +50,7 @@ char* load_shader_code(char* path) {
 
   // try to open it
   if ((f = fopen(path, "r")) == NULL) {
-    fprintf(stderr, "Error opening obj file. \n");
+    fprintf(stderr, "Error: Couldn't open shader file. \n");
     exit(EXIT_FAILURE);
   }
 
@@ -68,7 +68,7 @@ char* load_shader_code(char* path) {
   }
 
   // copy to buf
-  if(1 != fread( buf , size, 1 , f)) {
+  if(1 != fread(buf , size, 1 , f)) {
     fclose(f);
     free(buf);
     fprintf(stderr, "ERROR: Shader file read failed.\n");
