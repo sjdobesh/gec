@@ -14,13 +14,58 @@
 #include "module/logo.h" // SDL logo byte data
 #include "module/win.h"  // win header
 
+//---------------------------------------
+// initialize a window parameters struct
+//---------------------------------------
+// I: vert_path - char*
+//    char path - char*
+//    w, h      - int
+// O: parameter - win_parameters*
+//----------------------------------------------------------------------------80
+win_parameters* init_win_parameters(
+  char* vert_path, char* frag_path,
+  int w, int h
+) {
+  win_parameters* p = malloc(sizeof(win_parameters));
+  p->vert_path = vert_path;
+  p->frag_path = frag_path;
+  p->w         = w;
+  p->h         = h;
+  return p;
+}
+
+//---------------------------------------------
+// initialize a window with a parameter struct
+//---------------------------------------------
+// I: p         - win_parameters
+// O: exit code - int
+//----------------------------------------------------------------------------80
+int init_win(win_parameters* p) {
+
+  // create window & context
+  p->window = init_sdl(p);
+  p->context = init_context(p);;
+
+  // initialize and compile shaders
+  init_win_shaders(p);
+
+  // initialize geometry buffers
+  init_win_geometry(p);
+
+  // texture frags
+  init_win_textures(p);
+
+  return 0;
+
+}
+
 //--------------------------
 // initialize an SDL window
 //--------------------------
 // I: width & height - int
 // O: sdl window ptr - SDL_Window*
 //----------------------------------------------------------------------------80
-SDL_Window* init_sdl(int w, int h) {
+SDL_Window* init_sdl(win_parameters* p) {
 
   // init SDL video
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -33,7 +78,7 @@ SDL_Window* init_sdl(int w, int h) {
     "Photon",
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
-    w, h,
+    p->w, p->h,
     SDL_WINDOW_OPENGL
   );
   if (window == NULL) {
@@ -52,7 +97,7 @@ SDL_Window* init_sdl(int w, int h) {
 // I: sdl window ptr - SDL_Window*
 // O: sdl glcontext  - SDL_GLContext
 //----------------------------------------------------------------------------80
-SDL_GLContext init_context(SDL_Window* window) {
+SDL_GLContext init_context(win_parameters* p) {
 
   // set gl attributes
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -61,10 +106,10 @@ SDL_GLContext init_context(SDL_Window* window) {
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
   // init rendering context
-  SDL_GLContext context = SDL_GL_CreateContext(window);
+  SDL_GLContext context = SDL_GL_CreateContext(p->window);
   if (context == NULL) {
     fprintf(stderr, "ERROR: Context creation failed.\n");
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(p->window);
     SDL_Quit();
     exit(EXIT_FAILURE);
   }
@@ -77,7 +122,7 @@ SDL_GLContext init_context(SDL_Window* window) {
   if (err != GLEW_OK) {
     fprintf(stderr, "ERROR: GLEW Initialization failed.\n");
     SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(p->window);
     SDL_Quit();
     exit(EXIT_FAILURE);
   }
@@ -89,60 +134,50 @@ SDL_GLContext init_context(SDL_Window* window) {
 //-------------------------------------
 // initialize an OpenGL shader program
 //-------------------------------------
-// I: vao         - Gluint *
-//    vert_shader - GLuint *
-//    frag_shader - GLuint *
-//    shader_prog - GLuint *
+// I: parameters  - win_parameters*
 // O: exit code   - int
 //----------------------------------------------------------------------------80
-int init_win_shaders(
-  GLuint* vao,
-  GLuint* vert_shader,
-  GLuint* frag_shader,
-  GLuint* shader_prog,
-  char*  vert_path,
-  char*  frag_path
-) {
+int init_win_shaders(win_parameters* p) {
 
   GLint status;
   char err_buf[512];
 
-  glGenVertexArrays(1, vao);
-  glBindVertexArray(*vao);
+  glGenVertexArrays(1, &(p->vao));
+  glBindVertexArray(p->vao);
 
   // Compile vertex shader
-  const char* vert_shader_src = load_shader_code(vert_path);
-  *vert_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(*vert_shader, 1, &vert_shader_src, NULL);
-  glCompileShader(*vert_shader);
-  glGetShaderiv(*vert_shader, GL_COMPILE_STATUS, &status);
+  const char* vert_shader_src = load_shader_code(p->vert_path);
+  p->vert_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(p->vert_shader, 1, &vert_shader_src, NULL);
+  glCompileShader(p->vert_shader);
+  glGetShaderiv(p->vert_shader, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
-    glGetShaderInfoLog(*vert_shader, sizeof(err_buf), NULL, err_buf);
+    glGetShaderInfoLog(p->vert_shader, sizeof(err_buf), NULL, err_buf);
     err_buf[sizeof(err_buf)-1] = '\0';
     fprintf(stderr, "ERROR: Vertex shader compilation failed: %s\n", err_buf);
     return 1;
   }
 
   // Compile fragment shader
-  const char* frag_shader_src = load_shader_code(frag_path);
-  *frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(*frag_shader, 1, &frag_shader_src, NULL);
-  glCompileShader(*frag_shader);
-  glGetShaderiv(*frag_shader, GL_COMPILE_STATUS, &status);
+  const char* frag_shader_src = load_shader_code(p->frag_path);
+  p->frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(p->frag_shader, 1, &frag_shader_src, NULL);
+  glCompileShader(p->frag_shader);
+  glGetShaderiv(p->frag_shader, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
-    glGetShaderInfoLog(*frag_shader, sizeof(err_buf), NULL, err_buf);
+    glGetShaderInfoLog(p->frag_shader, sizeof(err_buf), NULL, err_buf);
     err_buf[sizeof(err_buf)-1] = '\0';
     fprintf(stderr, "ERROR: Fragment shader compilation failed: %s\n", err_buf);
     return 1;
   }
 
   // Link vertex and fragment shaders
-  *shader_prog = glCreateProgram();
-  glAttachShader(*shader_prog, *vert_shader);
-  glAttachShader(*shader_prog, *frag_shader);
-  glBindFragDataLocation(*shader_prog, 0, "out_Color");
-  glLinkProgram(*shader_prog);
-  glUseProgram(*shader_prog);
+  p->shader_prog = glCreateProgram();
+  glAttachShader(p->shader_prog, p->vert_shader);
+  glAttachShader(p->shader_prog, p->frag_shader);
+  glBindFragDataLocation(p->shader_prog, 0, "out_Color");
+  glLinkProgram(p->shader_prog);
+  glUseProgram (p->shader_prog);
 
   return 0;
 
@@ -151,18 +186,10 @@ int init_win_shaders(
 //------------------------------------
 // initialize an OpenGL geometry data
 //------------------------------------
-// I: vbo         - Gluint*
-//    ebo         - GLuint*
-//    shader_prog - GLuint*
-//    verts       - GLfloat**
-//    indices     - GLint*
+// I: parameters  - win_parameters*
 // O: exit code   - int
 //----------------------------------------------------------------------------80
-int init_win_geometry(
-  GLuint*  vbo,
-  GLuint*  ebo,
-  GLuint*  shader_prog
-) {
+int init_win_geometry(win_parameters* p) {
 
   // Screen Quad //-------------------------
   const GLfloat const_verts[4][4] = {
@@ -178,25 +205,25 @@ int init_win_geometry(
 
   // vertex buffer
   printf("Vertex Buffer...\n");
-  glGenBuffers(1, vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+  glGenBuffers(1, &(p->vbo));
+  glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(const_verts), const_verts, GL_STATIC_DRAW);
 
   // element buffer
   printf("Element Buffer...\n");
-  glGenBuffers(1, ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
+  glGenBuffers(1, &(p->ebo));
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p->ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(const_indicies), const_indicies, GL_STATIC_DRAW);
 
   // bind vertex position attribute
   printf("Position Attribute...\n");
-  GLint pos_attr_loc = glGetAttribLocation(*shader_prog, "in_Position");
+  GLint pos_attr_loc = glGetAttribLocation(p->shader_prog, "in_Position");
   glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(pos_attr_loc);
 
   // bind vertex texture coordinate attribute
   printf("Texture Coordinate...\n");
-  GLint tex_attr_loc = glGetAttribLocation(*shader_prog, "in_Texcoord");
+  GLint tex_attr_loc = glGetAttribLocation(p->shader_prog, "in_Texcoord");
   glVertexAttribPointer(
     tex_attr_loc,
     2,
@@ -214,17 +241,16 @@ int init_win_geometry(
 //----------------------------
 // initialize OpenGL textures
 //----------------------------
-// I: tex         - Gluint*
-//    shader_prog - GLuint*
+// I: parameters  - win_parameters*
 // O: exit code   - int
 //----------------------------------------------------------------------------80
-int init_win_textures(GLuint* tex, GLuint* shader_prog) {
+int init_win_textures(win_parameters* p) {
 
-  glGenTextures(1, tex);
+  glGenTextures(1, &(p->tex));
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, *tex);
+  glBindTexture(GL_TEXTURE_2D, p->tex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glUniform1i(glGetUniformLocation(*shader_prog, "tex"), 0);
+  glUniform1i(glGetUniformLocation(p->shader_prog, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -240,37 +266,26 @@ int init_win_textures(GLuint* tex, GLuint* shader_prog) {
 //------------------
 // free OpenGL data
 //------------------
-// I: shader_prog - Gluint*
-//    vert_shader - GLuint*
-//    frag_shader - GLuint*
-//    vao         - GLuint*
-//    vbo         - GLuint*
-//    ebo         - GLuint*
-//    tex         - GLuint*
-//    context     - SDL_GLContext*
-//    window      - SDL_Window**
-// O: exit code   - int
+// I: window parameters - win_parameters*
+// O: exit code         - int
 //----------------------------------------------------------------------------80
-int win_clean(
-  GLuint* shader_prog, GLuint* vert_shader, GLuint* frag_shader,
-  GLuint* vao, GLuint* vbo, GLuint* ebo, GLuint* tex,
-  SDL_GLContext* context, SDL_Window** window
-) {
+int win_clean(win_parameters* p) {
 
   glUseProgram(0);
   glDisableVertexAttribArray(0);
-  glDetachShader(*shader_prog, *vert_shader);
-  glDetachShader(*shader_prog, *frag_shader);
-  glDeleteProgram(*shader_prog);
-  glDeleteShader(*vert_shader);
-  glDeleteShader(*frag_shader);
-  glDeleteTextures(1, tex);
-  glDeleteBuffers(1, ebo);
-  glDeleteBuffers(1, vbo);
-  glDeleteVertexArrays(1, vao);
-  SDL_GL_DeleteContext(*context);
-  SDL_DestroyWindow(*window);
+  glDetachShader(p->shader_prog, p->vert_shader);
+  glDetachShader(p->shader_prog, p->frag_shader);
+  glDeleteProgram(p->shader_prog);
+  glDeleteShader(p->vert_shader);
+  glDeleteShader(p->frag_shader);
+  glDeleteTextures(1, &(p->tex));
+  glDeleteBuffers(1, &(p->ebo));
+  glDeleteBuffers(1, &(p->vbo));
+  glDeleteVertexArrays(1, &(p->vao));
+  SDL_GL_DeleteContext(p->context);
+  SDL_DestroyWindow(p->window);
   SDL_Quit();
+  free(p);
 
   return 0;
 
@@ -282,12 +297,12 @@ int win_clean(
 // I: window      - SDL_Window*
 // O: exit code   - int
 //----------------------------------------------------------------------------80
-int win_render(SDL_Window* window) {
+int win_render(win_parameters* p) {
 
   glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-  SDL_GL_SwapWindow(window);
+  SDL_GL_SwapWindow(p->window);
 
   return 0;
 

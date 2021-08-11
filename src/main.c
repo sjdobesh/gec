@@ -9,53 +9,20 @@
 #include "module/win.h"
 #include "module/main.h"
 
-SDL_Window*   window;
-SDL_GLContext context;
-GLuint        vao, vbo, ebo, tex;
-GLuint        vert_shader;
-GLuint        frag_shader;
-GLuint        shader_prog;
-
-// INIT //----------------------------------------------------------------------
-
-int init_win() {
-
-  // create window & context
-  window = init_sdl(WIN_WIDTH, WIN_HEIGHT);
-
-  context = init_context(window);;
-
-  // init_shaders();
-  init_win_shaders(
-    &vao,
-    &vert_shader,
-    &frag_shader,
-    &shader_prog,
-    VERT_PATH,
-    FRAG_PATH
-  );
-
-  // init_geometry();
-  init_win_geometry(
-    &vbo,
-    &ebo,
-    &shader_prog
-  );
-
-  // init_textures();
-  init_win_textures(&tex, &shader_prog);
-
-  return 0;
-
-}
-
-
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {
 
+  // INIT //--------------------------------------------------------------------
   printf("Initializing...\n");
-  if (init_win()) { return 1; }
+  // Window parameters
+  win_parameters* p = init_win_parameters(
+    VERT_PATH, FRAG_PATH,
+    WIN_WIDTH, WIN_HEIGHT
+  );
+  if (init_win(p)) { exit(EXIT_FAILURE); }
 
+
+  // RUN //---------------------------------------------------------------------
   printf("Running...\n");
   int loop = 1;
   while (loop == 1) {
@@ -67,17 +34,12 @@ int main(int argc, char* argv[]) {
        break;
      }
    }
-   win_render(window);
+   win_render(p);
   }
 
+  // EXIT //--------------------------------------------------------------------
   printf("Exiting...\n");
-
-  win_clean(
-    &shader_prog, &vert_shader, &frag_shader,
-    &vao, &vbo, &ebo, &tex,
-    &context, &window
-  );
-  // clean();
+  win_clean(p);
 
   return 0;
 

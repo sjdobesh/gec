@@ -9,6 +9,8 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
+#include "module/win.h"
+
 // window
 #define WIN_WIDTH  640
 #define WIN_HEIGHT 480
@@ -18,7 +20,7 @@
 #define FRAG_PATH "../shaders/test.frag"
 
 // prototypes
-int init_win();
+int init_win(win_parameters* p);
 
 #endif
 
