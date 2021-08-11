@@ -11,7 +11,10 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
-#include "module/logo.h" // SDL logo byte data
+// stb image library
+#define STB_IMAGE_IMPLEMENTATION
+#include <module/stb_image.h>
+
 #include "module/win.h"  // win header
 
 //---------------------------------------
@@ -23,12 +26,14 @@
 // O: parameter - win_parameters*
 //----------------------------------------------------------------------------80
 win_parameters* init_win_parameters(
-  char* vert_path, char* frag_path,
+  char* vert_path, char* frag_path, char* tex_path,
   int w, int h
 ) {
   win_parameters* p = malloc(sizeof(win_parameters));
   p->vert_path = vert_path;
   p->frag_path = frag_path;
+  p->t         = malloc(sizeof(tex_parameters));
+  p->t->path   = tex_path;
   p->w         = w;
   p->h         = h;
   return p;
@@ -246,16 +251,38 @@ int init_win_geometry(win_parameters* p) {
 //----------------------------------------------------------------------------80
 int init_win_textures(win_parameters* p) {
 
+  // load a texture with texture parameters (t)
+  load_image(p->t);
+
+  // make a texture
   glGenTextures(1, &(p->tex));
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, p->tex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(
+    GL_TEXTURE_2D,    // target
+    0,                // level
+    GL_RGBA,          // internal format
+    p->t->w, p->t->h, // width, height
+    0,                // border
+    GL_RGB,           // format
+    GL_UNSIGNED_BYTE, // type
+    NULL              // data
+  );
+  // bind it to the uniform
   glUniform1i(glGetUniformLocation(p->shader_prog, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, logo_rgba);
+  glTexSubImage2D(
+    GL_TEXTURE_2D,               // target
+    0, 0, 0,                     // level, x&y offset
+    p->t->w, p->t->h,            // width, height
+    GL_RGBA,                     // format
+    GL_UNSIGNED_INT_8_8_8_8_REV, // type
+    p->t->pixel_buf              // pixels
+  );
+  // blend
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -348,3 +375,27 @@ char* load_shader_code(char* path) {
   fclose(f);
   return buf;
 }
+
+//-------------------------
+// load an image with stbi
+//-------------------------
+// I: path      - char*
+//    pixels    - char**
+// O: exit code - int
+//    pixels by ref
+//----------------------------------------------------------------------------80
+// int load_image(char* path, int* width, int* height, int* channels, char** pixels) {
+int load_image(tex_parameters* p) {
+
+  p->pixel_buf = (char*)stbi_load(
+    p->path,
+    &(p->w),
+    &(p->h),
+    &(p->c),
+    STBI_rgb_alpha
+  );
+
+  return 0;
+
+}
+

@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
   printf("Initializing...\n");
   // Window parameters
   win_parameters* p = init_win_parameters(
-    VERT_PATH, FRAG_PATH,
+    VERT_PATH, FRAG_PATH, TEX_PATH,
     WIN_WIDTH, WIN_HEIGHT
   );
   if (init_win(p)) { exit(EXIT_FAILURE); }

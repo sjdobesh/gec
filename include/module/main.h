@@ -12,12 +12,13 @@
 #include "module/win.h"
 
 // window
-#define WIN_WIDTH  640
-#define WIN_HEIGHT 480
+#define WIN_WIDTH  512
+#define WIN_HEIGHT 512
 
 // paths
 #define VERT_PATH "../shaders/test.vert"
 #define FRAG_PATH "../shaders/test.frag"
+#define TEX_PATH  "../textures/texture.jpg"
 
 // prototypes
 int init_win(win_parameters* p);
