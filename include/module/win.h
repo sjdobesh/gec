@@ -13,6 +13,8 @@
 #include <SDL2/SDL_opengl.h>
 #include <GL/glu.h>
 
+#include "module/sprite.h"
+
 // texture parameters to load in an image
 typedef struct tex_parameters {
   char* path;      // path to this texture
@@ -31,6 +33,7 @@ typedef struct win_parameters {
   char*           vert_path;
   char*           frag_path;
   tex_parameters* t;
+  sprite*         s;
   int             w, h;
 } win_parameters;
 
@@ -44,6 +47,7 @@ int             win_clean           (win_parameters*);
 int             init_win_shaders    (win_parameters*);
 int             init_win_geometry   (win_parameters*);
 int             init_win_textures   (win_parameters*);
+int             update_win_geometry (win_parameters*);
 char*           load_shader_code    (char* path);
 int             load_image          (tex_parameters*);
 

@@ -8,17 +8,18 @@
 #include <stdio.h>
 #include "module/win.h"
 #include "module/main.h"
+#include "module/controller.h"
 
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {
 
+  unsigned int keys = 0;
+
   // INIT //--------------------------------------------------------------------
   printf("Initializing...\n");
   // Window parameters
-  win_parameters* p = init_win_parameters(
-    VERT_PATH, FRAG_PATH, TEX_PATH,
-    WIN_WIDTH, WIN_HEIGHT
-  );
+  win_parameters* p;
+  p = init_win_parameters(VERT_PATH,FRAG_PATH,TEX_PATH,WIN_WIDTH,WIN_HEIGHT);
   if (init_win(p)) { exit(EXIT_FAILURE); }
 
 
@@ -26,21 +27,18 @@ int main(int argc, char* argv[]) {
   printf("Running...\n");
   int loop = 1;
   while (loop == 1) {
-   SDL_Event event;
-   while (SDL_PollEvent(&event)) {
-     if (event.type         == SDL_WINDOWEVENT &&
-         event.window.event == SDL_WINDOWEVENT_CLOSE) {
-       loop = 0;
-       break;
-     }
-   }
-   win_render(p);
+
+    // // SDL event handling
+    control(p, &keys, &loop);
+
+    // render changes
+    win_render(p);
   }
 
   // EXIT //--------------------------------------------------------------------
   printf("Exiting...\n");
   win_clean(p);
 
-  return 0;
+  exit(EXIT_SUCCESS);
 
 }

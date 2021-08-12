@@ -15,7 +15,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <module/stb_image.h>
 
-#include "module/win.h"  // win header
+#include "module/win.h"    // win header
+#include "module/sprite.h" // sprite header
 
 //---------------------------------------
 // initialize a window parameters struct
@@ -34,6 +35,9 @@ win_parameters* init_win_parameters(
   p->frag_path = frag_path;
   p->t         = malloc(sizeof(tex_parameters));
   p->t->path   = tex_path;
+  p->s         = malloc(sizeof(sprite));
+  p->s->x      = p->s->y = 0;
+  p->s->h      = p->s->w = 0.5; // still in normalized coordinates
   p->w         = w;
   p->h         = h;
   return p;
@@ -49,7 +53,7 @@ int init_win(win_parameters* p) {
 
   // create window & context
   p->window = init_sdl(p);
-  p->context = init_context(p);;
+  p->context = init_context(p);
 
   // initialize and compile shaders
   init_win_shaders(p);
@@ -197,37 +201,40 @@ int init_win_shaders(win_parameters* p) {
 int init_win_geometry(win_parameters* p) {
 
   // Screen Quad //-------------------------
-  const GLfloat const_verts[4][4] = {
-    //  x      y      s      t
-    { -1.0, -1.0,  0.0,  1.0 }, // BL
-    { -1.0,  1.0,  0.0,  0.0 }, // TL
-    {  1.0,  1.0,  1.0,  0.0 }, // TR
-    {  1.0, -1.0,  1.0,  1.0 }, // BR
+  GLfloat const_verts[4][4] = {
+    // //  x      y      s      t
+    // { -1.0, -1.0,  0.0,  1.0 }, // BL
+    // { -1.0,  1.0,  0.0,  0.0 }, // TL
+    // {  1.0,  1.0,  1.0,  0.0 }, // TR
+    // {  1.0, -1.0,  1.0,  1.0 }, // BR
+    //    location    texture
+
+    { p->s->x - p->s->w, p->s->y - p->s->h,   0.0,   1.0 }, // BL
+    { p->s->x - p->s->w, p->s->y + p->s->h,   0.0,   0.0 }, // TL
+    { p->s->x + p->s->w, p->s->y + p->s->h,   1.0,   0.0 }, // TR
+    { p->s->x + p->s->w, p->s->y - p->s->h,   1.0,   1.0 }, // BR
   };
-  const GLint const_indicies[] = {
+  // indicies for any simple quad
+  GLint const_indicies[] = {
     0, 1, 2, 0, 2, 3
   };
 
   // vertex buffer
-  printf("Vertex Buffer...\n");
   glGenBuffers(1, &(p->vbo));
   glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(const_verts), const_verts, GL_STATIC_DRAW);
 
   // element buffer
-  printf("Element Buffer...\n");
   glGenBuffers(1, &(p->ebo));
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p->ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(const_indicies), const_indicies, GL_STATIC_DRAW);
 
   // bind vertex position attribute
-  printf("Position Attribute...\n");
   GLint pos_attr_loc = glGetAttribLocation(p->shader_prog, "in_Position");
   glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(pos_attr_loc);
 
   // bind vertex texture coordinate attribute
-  printf("Texture Coordinate...\n");
   GLint tex_attr_loc = glGetAttribLocation(p->shader_prog, "in_Texcoord");
   glVertexAttribPointer(
     tex_attr_loc,
@@ -238,6 +245,30 @@ int init_win_geometry(win_parameters* p) {
     (void*)(2 * sizeof(GLfloat))
   );
   glEnableVertexAttribArray(tex_attr_loc);
+
+  return 0;
+
+}
+
+int update_win_geometry(win_parameters* p) {
+
+  // Screen Quad //-------------------------
+  GLfloat const_verts[4][4] = {
+    { p->s->x - p->s->w, p->s->y - p->s->h,   0.0,   1.0 }, // BL
+    { p->s->x - p->s->w, p->s->y + p->s->h,   0.0,   0.0 }, // TL
+    { p->s->x + p->s->w, p->s->y + p->s->h,   1.0,   0.0 }, // TR
+    { p->s->x + p->s->w, p->s->y - p->s->h,   1.0,   1.0 }, // BR
+  };
+
+  // vertex buffer
+  glGenBuffers(1, &(p->vbo));
+  glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(const_verts), const_verts, GL_STATIC_DRAW);
+
+  // bind vertex position attribute
+  GLint pos_attr_loc = glGetAttribLocation(p->shader_prog, "in_Position");
+  glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
+  glEnableVertexAttribArray(pos_attr_loc);
 
   return 0;
 
@@ -298,6 +329,7 @@ int init_win_textures(win_parameters* p) {
 //----------------------------------------------------------------------------80
 int win_clean(win_parameters* p) {
 
+  // clean out gl program data
   glUseProgram(0);
   glDisableVertexAttribArray(0);
   glDetachShader(p->shader_prog, p->vert_shader);
@@ -309,9 +341,13 @@ int win_clean(win_parameters* p) {
   glDeleteBuffers(1, &(p->ebo));
   glDeleteBuffers(1, &(p->vbo));
   glDeleteVertexArrays(1, &(p->vao));
+  // sdl items
   SDL_GL_DeleteContext(p->context);
   SDL_DestroyWindow(p->window);
   SDL_Quit();
+  // free nested structs
+  free(p->t);
+  free(p->s);
   free(p);
 
   return 0;
