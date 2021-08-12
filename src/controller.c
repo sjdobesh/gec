@@ -1,15 +1,49 @@
-// sdl event parser
+//====================//
+//                    //
+//    CONTROLLER.C    //
+//                    //
+//=====================================================//
+// Handle SDL Events and use them to control a sprite. //
+//============================================================================80
 
+// SDL & OpenGL
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
+// custom module
 #include "module/sprite.h"
 #include "module/win.h"
 #include "module/controller.h"
 
-void sprite_controller(unsigned int* keys, SDL_Event event, int* loop) {
+//-----------------------------------------
+// control a sprite struct with sdl events
+//-----------------------------------------
+// I: parameters - win_parameters*
+//    keys       - unsigned int*
+//    loop       - int*
+// O: exit code  - int
+//----------------------------------------------------------------------------80
+// parse events, update sprite data, update context geometry
+// main exterior function call
+int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
+  update_sprite(p->s, *keys);
+  update_win_geometry(p);
+  return 0;
+}
+
+//-----------------------------------
+// parse an sdl event into key flags
+//-----------------------------------
+// I: key flags  - unsigned int*
+//    event      - SDL_Event
+//    loop flag  - int*
+// O: exit code  - int
+//----------------------------------------------------------------------------80
+int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
    switch(event.type) {
 
      // window events
@@ -57,9 +91,17 @@ void sprite_controller(unsigned int* keys, SDL_Event event, int* loop) {
        }
        break;
    }
+   return 0;
 }
 
-void sprite_update(sprite* s, unsigned int keys) {
+//----------------------------------
+// apply key flags to sprite struct
+//----------------------------------
+// I: (s)prite   - sprite*
+//    key flags  - unsigned int
+// O: exit code  - int
+//----------------------------------------------------------------------------80
+int update_sprite(sprite* s, unsigned int keys) {
   #define sqrt2over2 0.70710678 // for 45 deg angles
   float speed = 0.05;
   switch(keys) {
@@ -92,16 +134,6 @@ void sprite_update(sprite* s, unsigned int keys) {
       s->x -= (speed * sqrt2over2);
       break;
   }
+  return 0;
 }
 
-void control(win_parameters* p, unsigned int* keys, int* loop) {
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    sprite_controller(keys, event, loop);
-  }
-
-  // make changes with sdl event data
-  sprite_update(p->s, *keys);
-
-  update_win_geometry(p);
-}

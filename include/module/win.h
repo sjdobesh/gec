@@ -1,19 +1,23 @@
-//=================//
-//                 //
-//      WIN.H      //
-//                 //
+//=============//
+//             //
+//    WIN.H    //
+//             //
 //==========================================//
 // Header for SDL window and openGL context //
 //============================================================================80
 #ifndef _WIN_H_
 #define _WIN_H_
 
+// SDL & OpenGL
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 #include <GL/glu.h>
 
+// custom module
 #include "module/sprite.h"
+
+// STRUCTS //-------------------------------------------------------------------
 
 // texture parameters to load in an image
 typedef struct tex_parameters {
@@ -38,7 +42,9 @@ typedef struct win_parameters {
 } win_parameters;
 
 
-// function prototypes
+// PROTOTYPES //----------------------------------------------------------------
+
+int             init_win            (win_parameters*);
 win_parameters* init_win_parameters (char*, char*, char*, int, int);
 SDL_Window*     init_sdl            (win_parameters*);
 SDL_GLContext   init_context        (win_parameters*);

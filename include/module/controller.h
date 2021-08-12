@@ -1,13 +1,38 @@
+//====================//
+//                    //
+//    CONTROLLER.H    //
+//                    //
+//==========================================//
+// Header for SDL window and openGL context //
+//============================================================================80
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
+// SDL
 #include <SDL2/SDL.h>
+
+// custom module
 #include "sprite.h"
 #include "win.h"
 
-// prototypes
-void sprite_controller(unsigned int* keys, SDL_Event event, int* loop);
-void sprite_update(sprite* s, unsigned int keys);
-void control(win_parameters* p, unsigned int* keys, int* loop);
+// ENUMS //---------------------------------------------------------------------
+
+// key flag enums
+enum key_switches {
+  UP    = (1u << 0),
+  DOWN  = (1u << 1),
+  LEFT  = (1u << 2),
+  RIGHT = (1u << 3),
+  UL    = UP | LEFT,
+  UR    = UP | RIGHT,
+  DL    = DOWN | LEFT,
+  DR    = DOWN | RIGHT,
+};
+
+// PROTOTYPES //----------------------------------------------------------------
+
+int event_parser   (unsigned int* keys, SDL_Event event, int* loop);
+int update_sprite  (sprite* s, unsigned int keys);
+int control_sprite (win_parameters* p, unsigned int* keys, int* loop);
 
 #endif

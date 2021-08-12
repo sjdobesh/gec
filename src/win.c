@@ -1,11 +1,12 @@
-//=================//
-//                 //
-//      WIN.C      //
-//                 //
+//=============//
+//             //
+//    WIN.C    //
+//             //
 //======================================//
 // Handle SDL window and openGL context //
 //============================================================================80
 
+// SDL & OpenGL
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
@@ -15,8 +16,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <module/stb_image.h>
 
-#include "module/win.h"    // win header
-#include "module/sprite.h" // sprite header
+// custom module
+#include "module/win.h"
+#include "module/sprite.h"
+#include "module/controller.h"
 
 //---------------------------------------
 // initialize a window parameters struct

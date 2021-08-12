@@ -1,11 +1,21 @@
+//==============//
+//              //
+//    MAIN.C    //
+//              //
+//=====================//
+// Photon Game Engine. //
 //============================================================================80
 
+// SDL & OpenGL
 #include <SDL.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
+// std
 #include <stdio.h>
+
+// custom module
 #include "module/win.h"
 #include "module/main.h"
 #include "module/controller.h"
@@ -13,6 +23,7 @@
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {
 
+  // key flags
   unsigned int keys = 0;
 
   // INIT //--------------------------------------------------------------------
@@ -22,15 +33,12 @@ int main(int argc, char* argv[]) {
   p = init_win_parameters(VERT_PATH,FRAG_PATH,TEX_PATH,WIN_WIDTH,WIN_HEIGHT);
   if (init_win(p)) { exit(EXIT_FAILURE); }
 
-
   // RUN //---------------------------------------------------------------------
   printf("Running...\n");
   int loop = 1;
   while (loop == 1) {
-
     // // SDL event handling
-    control(p, &keys, &loop);
-
+    control_sprite(p, &keys, &loop);
     // render changes
     win_render(p);
   }
@@ -38,7 +46,6 @@ int main(int argc, char* argv[]) {
   // EXIT //--------------------------------------------------------------------
   printf("Exiting...\n");
   win_clean(p);
-
   exit(EXIT_SUCCESS);
 
 }
