@@ -17,8 +17,8 @@
 
 // custom module
 #include "module/win.h"
-#include "module/main.h"
 #include "module/controller.h"
+#include "module/main.h"
 
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {

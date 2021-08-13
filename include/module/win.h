@@ -54,7 +54,8 @@ int             init_win_shaders    (win_parameters*);
 int             init_win_geometry   (win_parameters*);
 int             init_win_textures   (win_parameters*);
 int             update_win_geometry (win_parameters*);
-char*           load_shader_code    (char* path);
+int             update_win_textures (win_parameters*);
+char*           load_shader_code    (char*);
 int             load_image          (tex_parameters*);
 
 #endif

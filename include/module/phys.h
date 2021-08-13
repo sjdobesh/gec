@@ -23,8 +23,9 @@ typedef struct vec3 {
 
 // rigid body
 typedef struct rigid_body {
-  vec2 *pos, *acc, *vel;
+  vec2 *pos, *dim, *acc, *vel;
   float g, drag, max_speed, elasticity;
+  int overlap, colliding;
 } rigid_body;
 
 // PROTOTYPES //----------------------------------------------------------------
@@ -34,9 +35,10 @@ vec2* vadd(vec2* a, vec2* b);
 vec2* vmul(vec2* a, float b);
 
 // RIGIDBODY //
-rigid_body* create_rb      ();
-int         free_rb        (rigid_body*);
-int         apply_force    (rigid_body* rb, vec2* force);
-int         update_physics (rigid_body* rb);
+rigid_body* create_rb          ();
+int         free_rb            (rigid_body*);
+int         apply_force        (rigid_body* rb, vec2* force);
+int         update_physics     (rigid_body* rb);
+int         collide_collection (rigid_body** rbl, int n);
 
 #endif

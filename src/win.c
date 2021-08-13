@@ -45,6 +45,7 @@ win_parameters* init_win_parameters(
   p->s->h = p->s->w = 0.5; // still in normalized coordinates
   // create rigid body
   p->s->rb     = create_rb();
+  p->s->rb->dim->x = p->s->rb->dim->y = p->s->x;
   p->w         = w;
   p->h         = h;
 
@@ -324,6 +325,50 @@ int init_win_textures(win_parameters* p) {
 
 }
 
+//------------------------
+// update OpenGL textures
+//------------------------
+// I: parameters  - win_parameters*
+// O: exit code   - int
+//------------------------------------------------------------------------------
+int update_win_textures(win_parameters* p) {
+
+  // make a texture
+  glGenTextures(1, &(p->tex));
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, p->tex);
+  glTexImage2D(
+    GL_TEXTURE_2D,    // target
+    0,                // level
+    GL_RGBA,          // internal format
+    p->t->w, p->t->h, // width, height
+    0,                // border
+    GL_RGB,           // format
+    GL_UNSIGNED_BYTE, // type
+    NULL              // data
+  );
+  // bind it to the uniform
+  glUniform1i(glGetUniformLocation(p->shader_prog, "tex"), 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexSubImage2D(
+    GL_TEXTURE_2D,               // target
+    0, 0, 0,                     // level, x&y offset
+    p->t->w, p->t->h,            // width, height
+    GL_RGBA,                     // format
+    GL_UNSIGNED_INT_8_8_8_8_REV, // type
+    p->t->pixel_buf              // pixels
+  );
+  // blend
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  return 0;
+
+}
+
 //------------------
 // free OpenGL data
 //------------------
@@ -374,7 +419,6 @@ int win_render(win_parameters* p) {
   return 0;
 
 }
-
 
 //--------------------------------
 // loads shader code into a char*
