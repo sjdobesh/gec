@@ -20,6 +20,7 @@
 #include "module/win.h"
 #include "module/sprite.h"
 #include "module/controller.h"
+#include "module/phys.h"
 
 //---------------------------------------
 // initialize a window parameters struct
@@ -28,22 +29,27 @@
 //    char path - char*
 //    w, h      - int
 // O: parameter - win_parameters*
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 win_parameters* init_win_parameters(
   char* vert_path, char* frag_path, char* tex_path,
   int w, int h
 ) {
+
   win_parameters* p = malloc(sizeof(win_parameters));
   p->vert_path = vert_path;
   p->frag_path = frag_path;
   p->t         = malloc(sizeof(tex_parameters));
   p->t->path   = tex_path;
   p->s         = malloc(sizeof(sprite));
-  p->s->x      = p->s->y = 0;
-  p->s->h      = p->s->w = 0.5; // still in normalized coordinates
+  p->s->x = p->s->y = 0;
+  p->s->h = p->s->w = 0.5; // still in normalized coordinates
+  // create rigid body
+  p->s->rb     = create_rb();
   p->w         = w;
   p->h         = h;
+
   return p;
+
 }
 
 //---------------------------------------------
@@ -51,21 +57,14 @@ win_parameters* init_win_parameters(
 //---------------------------------------------
 // I: p         - win_parameters
 // O: exit code - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int init_win(win_parameters* p) {
 
-  // create window & context
-  p->window = init_sdl(p);
-  p->context = init_context(p);
-
-  // initialize and compile shaders
-  init_win_shaders(p);
-
-  // initialize geometry buffers
-  init_win_geometry(p);
-
-  // texture frags
-  init_win_textures(p);
+  p->window = init_sdl(p);      // window
+  p->context = init_context(p); // context
+  init_win_shaders(p);          // shaders
+  init_win_geometry(p);         // geometry buffers
+  init_win_textures(p);         // textures
 
   return 0;
 
@@ -76,7 +75,7 @@ int init_win(win_parameters* p) {
 //--------------------------
 // I: width & height - int
 // O: sdl window ptr - SDL_Window*
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 SDL_Window* init_sdl(win_parameters* p) {
 
   // init SDL video
@@ -108,7 +107,7 @@ SDL_Window* init_sdl(win_parameters* p) {
 //---------------------------------------
 // I: sdl window ptr - SDL_Window*
 // O: sdl glcontext  - SDL_GLContext
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 SDL_GLContext init_context(win_parameters* p) {
 
   // set gl attributes
@@ -148,7 +147,7 @@ SDL_GLContext init_context(win_parameters* p) {
 //-------------------------------------
 // I: parameters  - win_parameters*
 // O: exit code   - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int init_win_shaders(win_parameters* p) {
 
   GLint status;
@@ -200,11 +199,12 @@ int init_win_shaders(win_parameters* p) {
 //------------------------------------
 // I: parameters  - win_parameters*
 // O: exit code   - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int init_win_geometry(win_parameters* p) {
 
   // Screen Quad //-------------------------
   GLfloat const_verts[4][4] = {
+
     // //  x      y      s      t
     // { -1.0, -1.0,  0.0,  1.0 }, // BL
     // { -1.0,  1.0,  0.0,  0.0 }, // TL
@@ -282,7 +282,7 @@ int update_win_geometry(win_parameters* p) {
 //----------------------------
 // I: parameters  - win_parameters*
 // O: exit code   - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int init_win_textures(win_parameters* p) {
 
   // load a texture with texture parameters (t)
@@ -329,7 +329,7 @@ int init_win_textures(win_parameters* p) {
 //------------------
 // I: window parameters - win_parameters*
 // O: exit code         - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int win_clean(win_parameters* p) {
 
   // clean out gl program data
@@ -350,6 +350,7 @@ int win_clean(win_parameters* p) {
   SDL_Quit();
   // free nested structs
   free(p->t);
+  free_rb(p->s->rb);
   free(p->s);
   free(p);
 
@@ -362,7 +363,7 @@ int win_clean(win_parameters* p) {
 //-----------------------------
 // I: window      - SDL_Window*
 // O: exit code   - int
-//----------------------------------------------------------------------------80
+//------------------------------------------------------------------------------
 int win_render(win_parameters* p) {
 
   glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -375,8 +376,12 @@ int win_render(win_parameters* p) {
 }
 
 
-// Shader Util //-------------------------------------------------------------80
-// just loads all the text from a file into a single char*
+//--------------------------------
+// loads shader code into a char*
+//--------------------------------
+// I: path        - char*
+// O: code buffer - char*
+//------------------------------------------------------------------------------
 char* load_shader_code(char* path) {
 
   FILE *f;
@@ -413,17 +418,15 @@ char* load_shader_code(char* path) {
   // close stream
   fclose(f);
   return buf;
+
 }
 
 //-------------------------
 // load an image with stbi
 //-------------------------
-// I: path      - char*
-//    pixels    - char**
-// O: exit code - int
-//    pixels by ref
-//----------------------------------------------------------------------------80
-// int load_image(char* path, int* width, int* height, int* channels, char** pixels) {
+// I: texture data - tex_parameters*
+// O: exit code    - int
+//------------------------------------------------------------------------------
 int load_image(tex_parameters* p) {
 
   p->pixel_buf = (char*)stbi_load(
@@ -437,4 +440,3 @@ int load_image(tex_parameters* p) {
   return 0;
 
 }
-

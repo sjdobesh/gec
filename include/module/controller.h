@@ -31,8 +31,9 @@ enum key_switches {
 
 // PROTOTYPES //----------------------------------------------------------------
 
-int event_parser   (unsigned int* keys, SDL_Event event, int* loop);
-int update_sprite  (sprite* s, unsigned int keys);
-int control_sprite (win_parameters* p, unsigned int* keys, int* loop);
+int event_parser     (unsigned int* keys, SDL_Event event, int* loop);
+int update_sprite    (sprite* s, unsigned int keys);
+int update_sprite_rb (sprite* s, unsigned int keys);
+int control_sprite   (win_parameters* p, unsigned int* keys, int* loop);
 
 #endif

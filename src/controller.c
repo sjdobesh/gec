@@ -30,7 +30,7 @@
 int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
   SDL_Event event;
   while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
-  update_sprite(p->s, *keys);
+  update_sprite_rb(p->s, *keys);
   update_win_geometry(p);
   return 0;
 }
@@ -101,6 +101,59 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
 //    key flags  - unsigned int
 // O: exit code  - int
 //----------------------------------------------------------------------------80
+int update_sprite_rb(sprite* s, unsigned int keys) {
+  #define sqrt2over2 0.70710678 // for 45 deg angles
+  float speed = 0.01;
+  vec2* v = malloc(sizeof(vec2));
+  v->x = v->y = 0;
+
+  switch(keys) {
+    case UP:
+      v->y = speed;
+      break;
+    case DOWN:
+      v->y = -speed;
+      break;
+    case RIGHT:
+      v->x = speed;
+      break;
+    case LEFT:
+      v->x = -speed;
+      break;
+    case UR:
+      v->x =  (speed * sqrt2over2);
+      v->y =  (speed * sqrt2over2);
+      break;
+    case UL:
+      v->x = -(speed * sqrt2over2);
+      v->y =  (speed * sqrt2over2);
+      break;
+    case DR:
+      v->x =  (speed * sqrt2over2);
+      v->y = -(speed * sqrt2over2);
+      break;
+    case DL:
+      v->x = -(speed * sqrt2over2);
+      v->y = -(speed * sqrt2over2);
+      break;
+  }
+
+  s->rb->acc = vadd(s->rb->acc, v);
+  update_physics(s->rb);
+  // update sprite pos
+  s->x = s->rb->pos->x;
+  s->y = s->rb->pos->y;
+  free(v);
+  return 0;
+}
+
+//----------------------------------
+// apply key flags to sprite struct
+//----------------------------------
+// I: (s)prite   - sprite*
+//    key flags  - unsigned int
+// O: exit code  - int
+//----------------------------------------------------------------------------80
 int update_sprite(sprite* s, unsigned int keys) {
   #define sqrt2over2 0.70710678 // for 45 deg angles
   float speed = 0.05;
@@ -136,4 +189,3 @@ int update_sprite(sprite* s, unsigned int keys) {
   }
   return 0;
 }
-
