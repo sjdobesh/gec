@@ -31,8 +31,7 @@ typedef struct win_parameters {
   SDL_Window*     window;
   SDL_GLContext   context;
   GLuint          vao, vbo, ebo, tex;
-  GLuint          vert_shader;
-  GLuint          frag_shader;
+  GLuint          vert_shader, frag_shader;
   GLuint          shader_prog;
   char*           vert_path;
   char*           frag_path;
@@ -57,5 +56,7 @@ int             update_win_geometry (win_parameters*);
 int             update_win_textures (win_parameters*);
 char*           load_shader_code    (char*);
 int             load_image          (tex_parameters*);
+int             pix2norm            (float*, float*, float*, float*, float, float);
+int             norm2pix            (float*, float*, float*, float*, float, float);
 
 #endif

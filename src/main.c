@@ -23,8 +23,7 @@
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {
 
-  // key flags
-  unsigned int keys = 0;
+  unsigned int keys = 0; // key flags
 
   // INIT //--------------------------------------------------------------------
   printf("Initializing...\n");
@@ -37,10 +36,8 @@ int main(int argc, char* argv[]) {
   printf("Running...\n");
   int loop = 1;
   while (loop == 1) {
-    // // SDL event handling
-    control_sprite(p, &keys, &loop);
-    // render changes
-    win_render(p);
+    control_sprite(p, &keys, &loop); // SDL event handling
+    win_render(p);                   // render changes
   }
 
   // EXIT //--------------------------------------------------------------------

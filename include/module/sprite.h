@@ -15,7 +15,7 @@
 
 // sprite data
 typedef struct sprite {
-  float x, y;     // origin pos
+  float x, y;     // origin pos (top left) in pixels
   float h, w;     // height & width
   int rb_flag;    // boolean for if this sprite has physics
   rigid_body* rb; // rigid_body struct

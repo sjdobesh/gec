@@ -30,40 +30,51 @@
 // parse events, update sprite data, update context geometry
 // main exterior function call
 int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
-
+  // poll sdl events
   SDL_Event event;
   while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
+  // update sprite with key data
   update_sprite_rb(p->s, *keys);
 
   // collection test
   // floor rigid_body
   rigid_body* floor = create_rb();
-  floor->pos->x = floor->pos->y = 0;
-  floor->dim->x = floor->dim->y = 0.25;
-
+  floor->box.pos.x = floor->box.pos.y = p->h / 2;
+  floor->box.dim.x = p->w;
+  floor->box.dim.y = 5;
   rigid_body* rbl = malloc(sizeof(rigid_body) * 2);
-
   // copy rigid bodies to list
   rbl[0] = *(p->s->rb);
   rbl[1] = *floor;
-
-  collide_collection(&rbl, 2);
+  collide_player(&rbl, 2);
   if (rbl[0].colliding && rbl[0].overlap) {
     p->t->pixel_buf = filter(p->t->pixel_buf, p->t->w * p->t->h, 4);
+    // resolve collision
+    p->s->rb->vel = vmul(p->s->rb->vel, -1);
+    // resolve_collision(p->s->rb, floor); // TODO <-
+    // clamp small values if almost still
+    if (vmag(p->s->rb->vel) < 0.5) {
+      vec2* v = create_vec2(0.0, p->s->rb->g);
+      apply_force(p->s->rb, v);
+      free(v);
+    }
     update_win_textures(p);
   } else if (rbl[0].colliding && !rbl[0].overlap) {
     p->t->pixel_buf = unfilter(p->t->pixel_buf, p->t->w * p->t->h, 4);
     update_win_textures(p);
+  } else if (!rbl[0].colliding && rbl[0].overlap) {
+    p->s->rb->vel.y = p->s->rb->vel.y * 0.0;
+    vec2* v = create_vec2(0.0, p->s->rb->g);
+    apply_force(p->s->rb, v);
+    free(v);
   }
+
   // update exterior rigid body
   p->s->rb->colliding = rbl[0].colliding;
   p->s->rb->overlap   = rbl[0].overlap;
   free(rbl);
-
   update_win_geometry(p);
-
   return 0;
-
 }
 
 //-----------------------------------
@@ -75,18 +86,14 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
-
    switch(event.type) {
-
      // window events
      case SDL_WINDOWEVENT:
        if (event.window.event == SDL_WINDOWEVENT_CLOSE) { *loop = 0; }
        break;
-
      // mouse clicks
      case SDL_MOUSEBUTTONDOWN:
        break;
-
      // key press
      case SDL_KEYDOWN:
        switch(event.key.keysym.sym) {
@@ -106,7 +113,6 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
            break;
        }
        break;
-
      // key release
      case SDL_KEYUP:
        switch(event.key.keysym.sym) {
@@ -125,9 +131,7 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
        }
        break;
    }
-
    return 0;
-
 }
 
 //----------------------------------
@@ -138,56 +142,50 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 int update_sprite_rb(sprite* s, unsigned int keys) {
-
-  #define sqrt2over2 0.70710678 // for 45 deg angles
-  float speed = 0.01;
+  float speed = 2.0;
   vec2* v = malloc(sizeof(vec2));
   v->x = v->y = 0;
-
-  // apply vector based on keys.
+  // apply vector based on keys. Remember, 0,0 is tl, h,w is br
   /* TODO (fix) this doesn't allow for more than 2 keys
    * pressed at a time since we are directly matching
    * enums for the case. */
   switch(keys) {
     case UP:
-      v->y = speed;
-      break;
-    case DOWN:
       v->y = -speed;
       break;
-    case RIGHT:
-      v->x = speed;
+    case DOWN:
+      v->y = +speed;
       break;
-    case LEFT:
+    case RIGHT:
       v->x = -speed;
       break;
+    case LEFT:
+      v->x = +speed;
+      break;
     case UR:
-      v->x =  (speed * sqrt2over2);
-      v->y =  (speed * sqrt2over2);
+      v->x = -(speed * sqrt2over2);
+      v->y = -(speed * sqrt2over2);
       break;
     case UL:
-      v->x = -(speed * sqrt2over2);
-      v->y =  (speed * sqrt2over2);
-      break;
-    case DR:
       v->x =  (speed * sqrt2over2);
       v->y = -(speed * sqrt2over2);
       break;
-    case DL:
+    case DR:
       v->x = -(speed * sqrt2over2);
-      v->y = -(speed * sqrt2over2);
+      v->y =  (speed * sqrt2over2);
+      break;
+    case DL:
+      v->x =  (speed * sqrt2over2);
+      v->y =  (speed * sqrt2over2);
       break;
   }
-
-  s->rb->acc = vadd(s->rb->acc, v);
+  s->rb->acc = vadd(s->rb->acc, *v);
   update_physics(s->rb);
   // update sprite pos to rigid bodies
-  s->x = s->rb->pos->x;
-  s->y = s->rb->pos->y;
+  s->x = s->rb->box.pos.x;
+  s->y = s->rb->box.pos.y;
   free(v);
-
   return 0;
-
 }
 
 //----------------------------------
@@ -198,40 +196,36 @@ int update_sprite_rb(sprite* s, unsigned int keys) {
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 int update_sprite(sprite* s, unsigned int keys) {
-
-  #define sqrt2over2 0.70710678 // for 45 deg angles
   float speed = 0.05;
   switch(keys) {
     case UP:
-      s->y += speed;
-      break;
-    case DOWN:
       s->y -= speed;
       break;
-    case RIGHT:
-      s->x += speed;
+    case DOWN:
+      s->y += speed;
       break;
-    case LEFT:
+    case RIGHT:
       s->x -= speed;
       break;
+    case LEFT:
+      s->x += speed;
+      break;
     case UR:
-      s->y += (speed * sqrt2over2);
-      s->x += (speed * sqrt2over2);
+      s->y -= (speed * sqrt2over2);
+      s->x -= (speed * sqrt2over2);
       break;
     case UL:
-      s->y += (speed * sqrt2over2);
-      s->x -= (speed * sqrt2over2);
-      break;
-    case DR:
       s->y -= (speed * sqrt2over2);
       s->x += (speed * sqrt2over2);
       break;
-    case DL:
-      s->y -= (speed * sqrt2over2);
+    case DR:
+      s->y += (speed * sqrt2over2);
       s->x -= (speed * sqrt2over2);
       break;
+    case DL:
+      s->y += (speed * sqrt2over2);
+      s->x += (speed * sqrt2over2);
+      break;
   }
-
   return 0;
-
 }
