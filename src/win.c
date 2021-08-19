@@ -36,21 +36,18 @@ win_parameters* init_win_parameters(
 ) {
   win_parameters* p = malloc(sizeof(win_parameters));
   // size
-  p->w          = w;
-  p->h          = h;
+  p->w = w;
+  p->h = h;
   // shader paths
   p->vert_path = vert_path;
   p->frag_path = frag_path;
   // texture parameters
-  p->t         = malloc(sizeof(tex_parameters));
-  p->t->path   = tex_path;
-  p->s         = malloc(sizeof(sprite));
-  // sprite parameters
-  p->s->box.pos.x = p->s->box.pos.y = (w/2); // center origin
-  p->s->box.dim.x = p->s->box.dim.y = 100;   // 100x100 pix
-  // create rigid body
-  p->s->rb      = create_rb();
-  p->s->rb->box = p->s->box;
+  p->t       = malloc(sizeof(tex_parameters));
+  p->t->path = tex_path;
+  // sprite
+  p->s = create_sprite((w/2), (h/2), 100, 100);
+  // add rigid body
+  add_rb(p->s, 0.0, 20.0, 0.95, 1.0);
   return p;
 }
 
@@ -61,7 +58,7 @@ win_parameters* init_win_parameters(
 // O: exit code - int
 //------------------------------------------------------------------------------
 int init_win(win_parameters* p) {
-  p->window = init_sdl(p);      // window
+  p->window  = init_sdl(p);     // window
   p->context = init_context(p); // context
   init_win_shaders(p);          // shaders
   init_win_geometry(p);         // geometry buffers
@@ -94,7 +91,7 @@ SDL_Window* init_sdl(win_parameters* p) {
     SDL_Quit();
     exit(EXIT_FAILURE);
   }
-   return window;
+  return window;
 }
 
 //---------------------------------------
@@ -184,44 +181,26 @@ int init_win_shaders(win_parameters* p) {
 //------------------------------------------------------------------------------
 int init_win_geometry(win_parameters* p) {
   // Screen Quad //-------------------------
-  // float x = p->s->x;
-  // float y = p->s->y;
-  // float w = p->s->w;
-  // float h = p->s->h;
-
-  // float x = 0.0;
-  // float y = 0.0;
-  // float w = 100;
-  // float h = 100;
-  // pix2norm(&x, &y, &w, &h, p->w, p->h);
-  // printf("updated coords: x:%f, y:%f, w:%f, h:%f", x, y, w, h);
-
-  float x = 0.0;
-  float y = 0.0;
-  float w = 100;
-  float h = 100;
-
-  // Screen Quad //-------------------------
-  GLfloat const_verts[4][4] = {
-    //location      texture
-    { x,     y,     0.0, 0.0 }, // TL
-    { x + w, y,     1.0, 0.0 }, // TR
-    { x + w, y - h, 1.0, 1.0 }, // BR
-    { x,     y - h, 0.0, 1.0 }, // BL
+  rect proj = square2norm(p->s->box, p->w, p->h);
+  GLfloat verts[4][4] = {
+    { proj.pos.x, proj.pos.y, 0.0, 0.0 }, // TL
+    { proj.dim.x, proj.pos.y, 1.0, 0.0 }, // TR
+    { proj.dim.x, proj.dim.y, 1.0, 1.0 }, // BR
+    { proj.pos.x, proj.dim.y, 0.0, 1.0 }, // BL
   };
   // indicies for any simple quad
-  GLint const_indicies[] = {
+  GLint indicies[] = {
     0, 1, 2, 0, 2, 3
   };
   // BIND BUFFERS //
   // vertex buffer
   glGenBuffers(1, &(p->vbo));
   glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(const_verts), const_verts, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
   // element buffer
   glGenBuffers(1, &(p->ebo));
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p->ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(const_indicies), const_indicies, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
   // bind vertex position attribute
   GLint pos_attr_loc = glGetAttribLocation(p->shader_prog, "in_Position");
   glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
@@ -249,23 +228,16 @@ int init_win_geometry(win_parameters* p) {
 int update_win_geometry(win_parameters* p) {
   // Screen Quad //-------------------------
   rect proj = square2norm(p->s->box, p->w, p->h);
-  GLfloat const_verts[4][4] = {
+  GLfloat verts[4][4] = {
     { proj.pos.x, proj.pos.y, 0.0, 0.0 }, // TL
     { proj.dim.x, proj.pos.y, 1.0, 0.0 }, // TR
     { proj.dim.x, proj.dim.y, 1.0, 1.0 }, // BR
     { proj.pos.x, proj.dim.y, 0.0, 1.0 }, // BL
   };
-  // GLfloat const_verts[4][4] = {
-  //   //location      texture
-  //   {  0,  0, 0.0, 0.0 }, // TR // counter clockwise
-  //   { -1,  0, 1.0, 0.0 }, // TL
-  //   { -1, -1, 1.0, 1.0 }, // BL
-  //   {  0, -1, 0.0, 1.0 }, // BR
-  // };
   // vertex buffer
   glGenBuffers(1, &(p->vbo));
   glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(const_verts), const_verts, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
   // bind vertex position attribute
   GLint pos_attr_loc = glGetAttribLocation(p->shader_prog, "in_Position");
   glVertexAttribPointer(pos_attr_loc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);

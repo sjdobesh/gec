@@ -38,9 +38,8 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
   SDL_Event event;
   while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
   // update sprite with key data
-  update_sprite(p->s, *keys);
+  update_sprite_rb(p->s, *keys);
   // technically done controlling sprite here
-
 
   // collection test
   // floor rigid_body
@@ -163,48 +162,45 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
 //----------------------------------------------------------------------------80
 int update_sprite_rb(sprite* s, unsigned int keys) {
   float speed = 2.0;
-  vec2* v = malloc(sizeof(vec2));
-  v->x = v->y = 0;
+  vec2 v = {0.0, 0.0};
   // apply vector based on keys. Remember, 0,0 is tl, h,w is br
   /* TODO (fix) this doesn't allow for more than 2 keys
    * pressed at a time since we are directly matching
    * enums for the case. */
   switch(keys) {
     case UP:
-      v->y = -speed;
+      v.y = -speed;
       break;
     case DOWN:
-      v->y = +speed;
+      v.y = +speed;
       break;
     case RIGHT:
-      v->x = -speed;
+      v.x = +speed;
       break;
     case LEFT:
-      v->x = +speed;
+      v.x = -speed;
       break;
     case UR:
-      v->x = -(speed * sqrt2over2);
-      v->y = -(speed * sqrt2over2);
+      v.x = +(speed * sqrt2over2);
+      v.y = -(speed * sqrt2over2);
       break;
     case UL:
-      v->x =  (speed * sqrt2over2);
-      v->y = -(speed * sqrt2over2);
+      v.x = -(speed * sqrt2over2);
+      v.y = -(speed * sqrt2over2);
       break;
     case DR:
-      v->x = -(speed * sqrt2over2);
-      v->y =  (speed * sqrt2over2);
+      v.x = +(speed * sqrt2over2);
+      v.y = +(speed * sqrt2over2);
       break;
     case DL:
-      v->x =  (speed * sqrt2over2);
-      v->y =  (speed * sqrt2over2);
+      v.x = -(speed * sqrt2over2);
+      v.y = +(speed * sqrt2over2);
       break;
   }
-  s->rb->acc = vadd(s->rb->acc, *v);
+  s->rb->acc = vadd(s->rb->acc, v);
   update_physics(s->rb);
   // update sprite pos to rigid bodies
-  s->box.pos.x = s->rb->box.pos.x;
-  s->box.pos.y = s->rb->box.pos.y;
-  free(v);
+  s->box.pos = s->rb->box.pos;
   return 0;
 }
 
