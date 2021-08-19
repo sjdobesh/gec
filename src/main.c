@@ -14,9 +14,11 @@
 
 // std
 #include <stdio.h>
+#include <stdint.h>
 
 // custom module
 #include "module/win.h"
+#include "module/phys.h"
 #include "module/controller.h"
 #include "module/main.h"
 
@@ -24,6 +26,8 @@
 int main(int argc, char* argv[]) {
 
   unsigned int keys = 0; // key flags
+  int mouse_x, mouse_y;  // mouse data
+  uint32_t mouse_button;
 
   // INIT //--------------------------------------------------------------------
   printf("Initializing...\n");

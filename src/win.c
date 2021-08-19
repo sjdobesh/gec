@@ -35,21 +35,22 @@ win_parameters* init_win_parameters(
   int w, int h                                      // window size
 ) {
   win_parameters* p = malloc(sizeof(win_parameters));
+  // size
+  p->w          = w;
+  p->h          = h;
   // shader paths
   p->vert_path = vert_path;
   p->frag_path = frag_path;
   // texture parameters
   p->t         = malloc(sizeof(tex_parameters));
   p->t->path   = tex_path;
-  // sprite parameters
   p->s         = malloc(sizeof(sprite));
-  p->s->x = p->s->y = (w/2) - 100;
-  p->s->h = p->s->w = (h/2) - 100;
+  // sprite parameters
+  p->s->box.pos.x = p->s->box.pos.y = (w/2); // center origin
+  p->s->box.dim.x = p->s->box.dim.y = 100;   // 100x100 pix
   // create rigid body
-  p->s->rb     = create_rb();
-  p->s->rb->box.dim.x = p->s->rb->box.dim.y = p->s->x;
-  p->w         = w;
-  p->h         = h;
+  p->s->rb      = create_rb();
+  p->s->rb->box = p->s->box;
   return p;
 }
 
@@ -183,18 +184,30 @@ int init_win_shaders(win_parameters* p) {
 //------------------------------------------------------------------------------
 int init_win_geometry(win_parameters* p) {
   // Screen Quad //-------------------------
-  float x = p->s->x;
-  float y = p->s->y;
-  float w = p->s->w;
-  float h = p->s->h;
-  pix2norm(&x, &y, &w, &h, p->w, p->h);
+  // float x = p->s->x;
+  // float y = p->s->y;
+  // float w = p->s->w;
+  // float h = p->s->h;
+
+  // float x = 0.0;
+  // float y = 0.0;
+  // float w = 100;
+  // float h = 100;
+  // pix2norm(&x, &y, &w, &h, p->w, p->h);
+  // printf("updated coords: x:%f, y:%f, w:%f, h:%f", x, y, w, h);
+
+  float x = 0.0;
+  float y = 0.0;
+  float w = 100;
+  float h = 100;
+
   // Screen Quad //-------------------------
   GLfloat const_verts[4][4] = {
-  //  location      texture
+    //location      texture
     { x,     y,     0.0, 0.0 }, // TL
     { x + w, y,     1.0, 0.0 }, // TR
-    { x + w, y + h, 1.0, 1.0 }, // BR
-    { x,     y + h, 0.0, 1.0 }, // BL
+    { x + w, y - h, 1.0, 1.0 }, // BR
+    { x,     y - h, 0.0, 1.0 }, // BL
   };
   // indicies for any simple quad
   GLint const_indicies[] = {
@@ -235,17 +248,20 @@ int init_win_geometry(win_parameters* p) {
 //------------------------------------------------------------------------------
 int update_win_geometry(win_parameters* p) {
   // Screen Quad //-------------------------
-  float x = p->s->x;
-  float y = p->s->y;
-  float w = p->s->w;
-  float h = p->s->h;
-  pix2norm(&x, &y, &w, &h, p->w, p->h);
+  rect proj = square2norm(p->s->box, p->w, p->h);
   GLfloat const_verts[4][4] = {
-    { x,     y,     0.0, 0.0 }, // TL
-    { x + w, y,     1.0, 0.0 }, // TR
-    { x + w, y + h, 1.0, 1.0 }, // BR
-    { x,     y + h, 0.0, 1.0 }, // BL
+    { proj.pos.x, proj.pos.y, 0.0, 0.0 }, // TL
+    { proj.dim.x, proj.pos.y, 1.0, 0.0 }, // TR
+    { proj.dim.x, proj.dim.y, 1.0, 1.0 }, // BR
+    { proj.pos.x, proj.dim.y, 0.0, 1.0 }, // BL
   };
+  // GLfloat const_verts[4][4] = {
+  //   //location      texture
+  //   {  0,  0, 0.0, 0.0 }, // TR // counter clockwise
+  //   { -1,  0, 1.0, 0.0 }, // TL
+  //   { -1, -1, 1.0, 1.0 }, // BL
+  //   {  0, -1, 0.0, 1.0 }, // BR
+  // };
   // vertex buffer
   glGenBuffers(1, &(p->vbo));
   glBindBuffer(GL_ARRAY_BUFFER, p->vbo);
@@ -441,39 +457,33 @@ int load_image(tex_parameters* p) {
   return 0;
 }
 
-//------------------------------------------------------
-// convert from screen coordinates to pixel coordinates
-//------------------------------------------------------
-// I: (x) coord - float*
-//    (y) coord - float*
-//    width     - float
-//    height    - float
-// O: exit code - int
+//---------------------------------------------------------
+// convert from point from pixel to normalized coordinates
+//---------------------------------------------------------
+// I: point        - vec2
+//    (win_w)idth  - float
+//    (hin_h)eight - float
+// O: exit code    - int
 //------------------------------------------------------------------------------
-int norm2pix(float* x, float* y, float* w, float* h, float win_w, float win_h) {
-  // convert range from -1, 1 to 0, 1 and multiply by dim
-  *x = win_w * (((*x * -1) + 1) / 2);
-  *y = win_h * (((*y * -1) + 1) / 2);
-  *w = win_w * (((*w * -1) + 1) / 2);
-  *h = win_h * (((*w * -1) + 1) / 2);
-
-  return 0;
+vec2 point2norm(vec2 point, float win_w, float win_h) {
+  vec2 projected = {
+    ((point.x / win_w) * 2) - 1,
+    -1 * (((point.y / win_h) * 2) - 1)
+  };
+  return projected;
 }
-
 //------------------------------------------------------
-// convert from pixel coordinates to screen coordinates
+// project square into normalized coordinates
 //------------------------------------------------------
-// I: (x) coord - float*
-//    (y) coord - float*
-//    width     - float
-//    height    - float
-// O: exit code - int
+// I: (r)ectangle  - rect*
+//    (win_w)idth  - float
+//    (hin_h)eigth - float
+// O: rectangle    - rect
 //------------------------------------------------------------------------------
-int pix2norm(float* x, float* y, float* w, float* h, float win_w, float win_h) {
-  // convert range from w, h to -1, 1
-  *x = (((*x * -1) - 1) * 2) / win_w;
-  *y = (((*y * -1) - 1) * 2) / win_h;
-  *w = (((*w * -1) - 1) * 2) / win_w;
-  *h = (((*h * -1) - 1) * 2) / win_h;
-  return 0;
+rect square2norm(rect r, float win_w, float win_h) {
+  rect projected = {
+    point2norm(r.pos, win_w, win_h),
+    point2norm(vadd(r.pos, r.dim), win_w, win_h)
+  };
+  return projected;
 }

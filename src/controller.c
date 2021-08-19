@@ -12,6 +12,10 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
+
+// std
+#include <stdint.h>
+
 // custom module
 #include "module/phys.h"
 #include "module/img.h"
@@ -27,25 +31,30 @@
 //    loop       - int*
 // O: exit code  - int
 //----------------------------------------------------------------------------80
-// parse events, update sprite data, update context geometry
+// Details: parse events, update sprite data, update context geometry
 // main exterior function call
 int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
   // poll sdl events
   SDL_Event event;
   while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
   // update sprite with key data
-  update_sprite_rb(p->s, *keys);
+  update_sprite(p->s, *keys);
+  // technically done controlling sprite here
+
 
   // collection test
   // floor rigid_body
   rigid_body* floor = create_rb();
-  floor->box.pos.x = floor->box.pos.y = p->h / 2;
+  floor->box.pos.x = 0;
+  floor->box.pos.y = p->h;
   floor->box.dim.x = p->w;
   floor->box.dim.y = 5;
   rigid_body* rbl = malloc(sizeof(rigid_body) * 2);
   // copy rigid bodies to list
   rbl[0] = *(p->s->rb);
   rbl[1] = *floor;
+
+  // update filter with collision
   collide_player(&rbl, 2);
   if (rbl[0].colliding && rbl[0].overlap) {
     p->t->pixel_buf = filter(p->t->pixel_buf, p->t->w * p->t->h, 4);
@@ -68,13 +77,24 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
     apply_force(p->s->rb, v);
     free(v);
   }
-
   // update exterior rigid body
   p->s->rb->colliding = rbl[0].colliding;
   p->s->rb->overlap   = rbl[0].overlap;
   free(rbl);
   update_win_geometry(p);
   return 0;
+}
+
+//---------------------------------------
+// get mouse coordinates and button data
+//---------------------------------------
+// I: mouse x coord - int*
+//    mouse y coord - int*
+// O: mouse button mask - unsigned int 32
+//----------------------------------------------------------------------------80
+uint32_t get_mouse(int* mouse_x, int* mouse_y) {
+  SDL_PumpEvents();
+  return SDL_GetMouseState(mouse_x, mouse_y);
 }
 
 //-----------------------------------
@@ -86,52 +106,52 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
-   switch(event.type) {
-     // window events
-     case SDL_WINDOWEVENT:
-       if (event.window.event == SDL_WINDOWEVENT_CLOSE) { *loop = 0; }
-       break;
-     // mouse clicks
-     case SDL_MOUSEBUTTONDOWN:
-       break;
-     // key press
-     case SDL_KEYDOWN:
-       switch(event.key.keysym.sym) {
-         case SDLK_ESCAPE: // escape
-           *loop = 0;
-         case SDLK_w: // up
-           *keys |= UP;
-           break;
-         case SDLK_s: // down
-           *keys |= DOWN;
-           break;
-         case SDLK_a: // left
-           *keys |= LEFT;
-           break;
-         case SDLK_d: // right
-           *keys |= RIGHT;
-           break;
-       }
-       break;
-     // key release
-     case SDL_KEYUP:
-       switch(event.key.keysym.sym) {
-         case SDLK_w: // up
-           *keys &= ~UP;
-           break;
-         case SDLK_s: // down
-           *keys &= ~DOWN;
-           break;
-         case SDLK_a: // left
-           *keys &= ~LEFT;
-           break;
-         case SDLK_d: // right
-           *keys &= ~RIGHT;
-           break;
-       }
-       break;
-   }
-   return 0;
+  switch(event.type) {
+    // window events
+    case SDL_WINDOWEVENT:
+      if (event.window.event == SDL_WINDOWEVENT_CLOSE) { *loop = 0; }
+      break;
+    // mouse clicks
+    case SDL_MOUSEBUTTONDOWN:
+      break;
+    // key press
+    case SDL_KEYDOWN:
+      switch(event.key.keysym.sym) {
+        case SDLK_ESCAPE: // escape
+          *loop = 0;
+        case SDLK_w: // up
+          *keys |= UP;
+          break;
+        case SDLK_s: // down
+          *keys |= DOWN;
+          break;
+        case SDLK_a: // left
+          *keys |= LEFT;
+          break;
+        case SDLK_d: // right
+          *keys |= RIGHT;
+          break;
+      }
+      break;
+    // key release
+    case SDL_KEYUP:
+      switch(event.key.keysym.sym) {
+        case SDLK_w: // up
+          *keys &= ~UP;
+          break;
+        case SDLK_s: // down
+          *keys &= ~DOWN;
+          break;
+        case SDLK_a: // left
+          *keys &= ~LEFT;
+          break;
+        case SDLK_d: // right
+          *keys &= ~RIGHT;
+          break;
+      }
+      break;
+  }
+  return 0;
 }
 
 //----------------------------------
@@ -182,8 +202,8 @@ int update_sprite_rb(sprite* s, unsigned int keys) {
   s->rb->acc = vadd(s->rb->acc, *v);
   update_physics(s->rb);
   // update sprite pos to rigid bodies
-  s->x = s->rb->box.pos.x;
-  s->y = s->rb->box.pos.y;
+  s->box.pos.x = s->rb->box.pos.x;
+  s->box.pos.y = s->rb->box.pos.y;
   free(v);
   return 0;
 }
@@ -196,35 +216,35 @@ int update_sprite_rb(sprite* s, unsigned int keys) {
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 int update_sprite(sprite* s, unsigned int keys) {
-  float speed = 0.05;
+  float speed = 5;
   switch(keys) {
     case UP:
-      s->y -= speed;
+      s->box.pos.y -= speed;
       break;
     case DOWN:
-      s->y += speed;
+      s->box.pos.y += speed;
       break;
     case RIGHT:
-      s->x -= speed;
+      s->box.pos.x += speed;
       break;
     case LEFT:
-      s->x += speed;
+      s->box.pos.x -= speed;
       break;
     case UR:
-      s->y -= (speed * sqrt2over2);
-      s->x -= (speed * sqrt2over2);
+      s->box.pos.y -= (speed * sqrt2over2);
+      s->box.pos.x += (speed * sqrt2over2);
       break;
     case UL:
-      s->y -= (speed * sqrt2over2);
-      s->x += (speed * sqrt2over2);
+      s->box.pos.y -= (speed * sqrt2over2);
+      s->box.pos.x -= (speed * sqrt2over2);
       break;
     case DR:
-      s->y += (speed * sqrt2over2);
-      s->x -= (speed * sqrt2over2);
+      s->box.pos.y += (speed * sqrt2over2);
+      s->box.pos.x += (speed * sqrt2over2);
       break;
     case DL:
-      s->y += (speed * sqrt2over2);
-      s->x += (speed * sqrt2over2);
+      s->box.pos.y += (speed * sqrt2over2);
+      s->box.pos.x -= (speed * sqrt2over2);
       break;
   }
   return 0;

@@ -35,6 +35,7 @@ enum key_switches {
 
 // PROTOTYPES //----------------------------------------------------------------
 
+uint32_t get_mouse(int* mouse_x, int* mouse_y);
 int event_parser     (unsigned int* keys, SDL_Event event, int* loop);
 int update_sprite    (sprite* s, unsigned int keys);
 int update_sprite_rb (sprite* s, unsigned int keys);

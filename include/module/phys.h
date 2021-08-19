@@ -8,6 +8,10 @@
 #ifndef _PHYS_H_
 #define _PHYS_H_
 
+// DEFINITIONS //---------------------------------------------------------------
+
+#define PI 3.14159265
+
 // STRUCTS //-------------------------------------------------------------------
 
 // 2d vector
@@ -27,7 +31,7 @@ typedef struct line {
 
 // ray struct
 typedef struct ray {
-  vec2 pos, vec;
+  vec2 pos, dir;
 } ray;
 
 // rectangle struct
@@ -53,17 +57,23 @@ float dist(vec2 a, vec2 b);
 
 // VECTOR //
 vec2 vadd(vec2 a, vec2 b);
-vec2 vmul(vec2 a, float b);
+vec2 vsub(vec2 a, vec2 b);
+vec2 vmul(vec2 v, float s);
+vec2 vdiv(vec2 a, vec2 b);
 vec2 vlim(vec2 v, float lim);
 float vmag(vec2 v);
 vec2* create_vec2(float x, float y);
 
 // lines and rays
-line* create_line    (vec2 a, vec2 b);
-ray*  create_ray     (vec2 pos, vec2 vec);
-line  ray_to_line    (ray r);
-int   line_intersect (line a, line b, vec2** x);
-int   nearest_intersect(ray r, line* sides);
+line* create_line       (vec2 a, vec2 b);
+ray*  create_ray        (vec2 pos, vec2 vec);
+line  ray_to_line       (ray r);
+int   line_intersect    (line a, line b, vec2** x);
+int   nearest_intersect (ray r, line* sides);
+int   pointxrect        (vec2 p, rect r);
+int   rectxrect         (rect r1, rect r2);
+int   rayxrect          (ray r, rect target, vec2* contact_point,
+                         vec2* contact_normal, float* hit_near);
 
 // RIGIDBODY //
 rigid_body* create_rb          ();

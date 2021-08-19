@@ -16,6 +16,7 @@
 
 // custom module
 #include "module/sprite.h"
+#include "module/phys.h"
 
 // STRUCTS //-------------------------------------------------------------------
 
@@ -58,5 +59,7 @@ char*           load_shader_code    (char*);
 int             load_image          (tex_parameters*);
 int             pix2norm            (float*, float*, float*, float*, float, float);
 int             norm2pix            (float*, float*, float*, float*, float, float);
+vec2            point2norm          (vec2, float, float);
+rect            square2norm         (rect, float, float);
 
 #endif

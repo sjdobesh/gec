@@ -12,8 +12,8 @@
 // CONSTANTS //-----------------------------------------------------------------
 
 // window
-#define WIN_WIDTH  512
-#define WIN_HEIGHT 512
+#define WIN_WIDTH  600
+#define WIN_HEIGHT 600
 
 // paths
 #define VERT_PATH "../shaders/test.vert"
