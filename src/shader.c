@@ -12,37 +12,17 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
+// std
+#include <string.h>
+
 // custom
 #include "module/shader.h"
 
+// COMPILE SHADER //------------------------------------------------------------
 
-// INIT & FREE //---------------------------------------------------------------
-
-//--------------------------------
-// allocate shaders and set names
-//------------------------------------------------------------------------------
-shaders* init_shaders(char** names, int n) {
-  shaders* s = malloc(sizeof(shaders));
-  s->ptrs    = malloc(sizeof(unsigned int) * n);
-  s->names   = names;
-  s->n       = n;
-  return s;
-}
-
-//-----------------------
-// free shader selection
-//------------------------------------------------------------------------------
-void free_shaders(shaders* s) {
-  free(s->ptrs);
-  free(s);
-}
 //--------------------------------
 // loads shader code into a char*
-//--------------------------------
-// I: path        - char*
-// O: code buffer - char*
 //------------------------------------------------------------------------------
-
 char* load_shader_code(char* path) {
   FILE *f;
   long size;
@@ -75,14 +55,31 @@ char* load_shader_code(char* path) {
   return buf;
 }
 
+// SHADER SET FUNCTIONS //------------------------------------------------------
+
+//--------------------------------
+// allocate shaders and set names
+//------------------------------------------------------------------------------
+shaders* init_shaders(char** names, int n) {
+  shaders* s = malloc(sizeof(shaders));
+  s->ptrs    = malloc(sizeof(unsigned int) * n);
+  s->names   = names;
+  s->n       = n;
+  return s;
+}
+
+//-----------------------
+// free shader selection
+//------------------------------------------------------------------------------
+void free_shaders(shaders* s) {
+  free(s->ptrs);
+  free(s);
+}
+
 //-------------------------------------------------------
 // compile to shader program and return reference to it.
 // note that this just creates the program on the gpu,
 // this will still need to be use with glUseProgram()
-//-------------------------------------------------------
-// I: vert_path          - char*
-//    frag_path          - char*
-// O: shader program ptr - uint
 //------------------------------------------------------------------------------
 unsigned int compile_shader(char* vert_path, char* frag_path) {
   GLint status;

@@ -17,24 +17,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <module/stb_image.h>
 
+// std
+#include <string.h>
+
+// custom
 #include "module/texture.h"
 
-//---------------------------------
-// allocate textures and set names
-//------------------------------------------------------------------------------
-textures* init_textures(char** names, int n) {
-  textures* t = malloc(sizeof(textures));
-  t->n        = n;
-  return t;
-}
-
-//------------------------
-// free texture selection
-//------------------------------------------------------------------------------
-void free_textures(textures* t) {
-  free(t->t);
-  free(t);
-}
+// LOAD & BIND //---------------------------------------------------------------
 
 //-------------------------
 // load an image with stbi
@@ -110,6 +99,25 @@ int bind_texture(texture t, unsigned int shader) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   return 0;
+}
+
+// TEXTURE SET FUNCTIONS //----------------------------------------------
+
+//---------------------------------
+// allocate textures and set names
+//------------------------------------------------------------------------------
+textures* init_textures(char** names, int n) {
+  textures* t = malloc(sizeof(textures));
+  t->n        = n;
+  return t;
+}
+
+//------------------------
+// free texture selection
+//------------------------------------------------------------------------------
+void free_textures(textures* t) {
+  free(t->t);
+  free(t);
 }
 
 //---------------------------------------

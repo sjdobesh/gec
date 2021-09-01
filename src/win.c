@@ -12,13 +12,9 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
-// stb image library
-#define STB_IMAGE_IMPLEMENTATION
-#include <module/stb_image.h>
-
 // custom module
 #include "module/win.h"
-#include "module/shader.h"
+#include "module/resources.h"
 #include "module/phys.h"
 #include "module/sprite.h"
 #include "module/controller.h"
@@ -224,7 +220,7 @@ int update_win_geometry(win_parameters* p) {
 //------------------------------------------------------------------------------
 int init_win_textures(win_parameters* p) {
   // load a texture with texture parameters (t)
-  load_image(p->t);
+  // load_image(p->t);
   // make a texture
   glGenTextures(1, &(p->tex));
   glActiveTexture(GL_TEXTURE0);
@@ -346,22 +342,22 @@ int win_render(win_parameters* p) {
 }
 
 
-//-------------------------
-// load an image with stbi
-//-------------------------
-// I: texture data - tex_parameters*
-// O: exit code    - int
-//------------------------------------------------------------------------------
-int load_image(tex_parameters* t) {
-  t->pixel_buf = (char*)stbi_load(
-    t->path,
-    &(t->w),
-    &(t->h),
-    &(t->c),
-    STBI_rgb_alpha
-  );
-  return 0;
-}
+// //-------------------------
+// // load an image with stbi
+// //-------------------------
+// // I: texture data - tex_parameters*
+// // O: exit code    - int
+// //------------------------------------------------------------------------------
+// int load_image(tex_parameters* t) {
+//   t->pixel_buf = (char*)stbi_load(
+//     t->path,
+//     &(t->w),
+//     &(t->h),
+//     &(t->c),
+//     STBI_rgb_alpha
+//   );
+//   return 0;
+// }
 
 //---------------------------------------------------------
 // convert from point from pixel to normalized coordinates
@@ -393,3 +389,4 @@ rect square2norm(rect r, float win_w, float win_h) {
   };
   return projected;
 }
+

@@ -15,7 +15,6 @@
 
 // std
 #include <stdlib.h>
-#include <string.h>
 
 // custom
 #include "module/texture.h"
@@ -101,5 +100,30 @@ resources* load_resources (
   shaders* s   = load_shaders(vert_paths, frag_paths, s_names, num_shader);
   textures* t  = load_textures(tex_paths, t_names, widths, heights, num_tex);
   resources* r = init_resources(*s, *t);
+  return r;
+}
+
+// set resource struct
+resources* set_resources() {
+  // shader
+  char** vert_paths = malloc(sizeof(char*));
+  char** frag_paths = malloc(sizeof(char*));
+  vert_paths[0]     = "../shaders/test.vert";
+  frag_paths[0]     = "../shaders/test.frag";
+  char** s_names    = malloc(sizeof(char*));
+  s_names[0]        = "default";
+  // texture
+  char** tex_paths  = malloc(sizeof(char*));
+  tex_paths[0]      = "../textures/texture.jpg";
+  int* widths       = malloc(sizeof(int));
+  int* heights      = malloc(sizeof(int));
+  char** t_names    = malloc(sizeof(char*));
+  t_names[0]        = "default";
+  widths[0] = heights[0] = 100;
+  // count
+  int num_shader, num_tex;
+  num_shader = num_tex = 1;
+  // resources
+  resources* r = load_resources(vert_paths, frag_paths, tex_paths, s_names, t_names, widths, heights, num_shader, num_tex);
   return r;
 }
