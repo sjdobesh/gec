@@ -25,9 +25,8 @@
 // MAIN //====================================================================80
 int main(int argc, char* argv[]) {
 
-  unsigned int keys = 0; // key flags
-  int mouse_x, mouse_y;  // mouse data
-  uint32_t mouse_button;
+  // controller... maybe this should go in win_parameters? can't due to recursive dependencies
+  controller ctrl;
 
   // INIT //--------------------------------------------------------------------
   printf("Initializing...\n");
@@ -40,7 +39,7 @@ int main(int argc, char* argv[]) {
   printf("Running...\n");
   int loop = 1;
   while (loop == 1) {
-    control_sprite(p, &keys, &loop); // SDL event handling
+    control_sprite(p, &ctrl, &loop); // SDL event handling
     win_render(p);                   // render changes
   }
 

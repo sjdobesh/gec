@@ -33,12 +33,22 @@ enum key_switches {
   DR    = DOWN | RIGHT,
 };
 
+// STRUCTS //-------------------------------------------------------------------
+
+// struct that carries any controller data (keyboard + mouse)
+typedef struct controller {
+  uint32_t keys;             // key flags
+  int      mouse_x, mouse_y; // mouse data
+  uint32_t mouse_b;          // mouse button flag
+} controller;
+
 // PROTOTYPES //----------------------------------------------------------------
 
-uint32_t get_mouse(int* mouse_x, int* mouse_y);
-int event_parser     (unsigned int* keys, SDL_Event event, int* loop);
-int update_sprite    (sprite* s, unsigned int keys);
-int update_sprite_rb (sprite* s, unsigned int keys);
-int control_sprite   (win_parameters* p, unsigned int* keys, int* loop);
+uint32_t get_mouse        (int* mouse_x, int* mouse_y);
+int      event_parser     (uint32_t* keys, SDL_Event event, int* loop);
+int      update_sprite    (sprite* s, uint32_t keys);
+int      update_sprite_rb (sprite* s, uint32_t keys);
+int      resolve_physics  (win_parameters* p);
+int      control_sprite   (win_parameters* p, controller* ctrl, int* loop);
 
 #endif

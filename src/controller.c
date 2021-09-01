@@ -27,20 +27,29 @@
 // control a sprite struct with sdl events
 //-----------------------------------------
 // I: parameters - win_parameters*
-//    keys       - unsigned int*
+//    keys       - uint32_t*
 //    loop       - int*
 // O: exit code  - int
 //----------------------------------------------------------------------------80
 // Details: parse events, update sprite data, update context geometry
 // main exterior function call
-int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
+int control_sprite(win_parameters* p, controller* ctrl, int* loop) {
   // poll sdl events
   SDL_Event event;
-  while (SDL_PollEvent(&event)) { event_parser(keys, event, loop); }
+  while (SDL_PollEvent(&event)) { event_parser(&ctrl->keys, event, loop); }
   // update sprite with key data
-  update_sprite_rb(p->s, *keys);
+  if (p->s->rb_flag) {
+    update_sprite_rb(p->s, ctrl->keys);
+    resolve_physics(p);
+  } else {
+    update_sprite(p->s, ctrl->keys);
+  }
   // technically done controlling sprite here
+  update_win_geometry(p);
+  return 0;
+}
 
+int resolve_physics(win_parameters* p) {
   // collection test
   // floor rigid_body
   rigid_body* floor = create_rb();
@@ -57,9 +66,11 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
   collide_player(&rbl, 2);
   if (rbl[0].colliding && rbl[0].overlap) {
     p->t->pixel_buf = filter(p->t->pixel_buf, p->t->w * p->t->h, 4);
+
     // resolve collision
-    p->s->rb->vel = vmul(p->s->rb->vel, -1);
     // resolve_collision(p->s->rb, floor); // TODO <-
+    p->s->rb->vel = vmul(p->s->rb->vel, -1);
+
     // clamp small values if almost still
     if (vmag(p->s->rb->vel) < 0.5) {
       vec2* v = create_vec2(0.0, p->s->rb->g);
@@ -80,16 +91,15 @@ int control_sprite(win_parameters* p, unsigned int* keys, int* loop) {
   p->s->rb->colliding = rbl[0].colliding;
   p->s->rb->overlap   = rbl[0].overlap;
   free(rbl);
-  update_win_geometry(p);
   return 0;
 }
 
 //---------------------------------------
 // get mouse coordinates and button data
 //---------------------------------------
-// I: mouse x coord - int*
-//    mouse y coord - int*
-// O: mouse button mask - unsigned int 32
+// I: mouse x coord     - int*
+//    mouse y coord     - int*
+// O: mouse button mask - uint32_t
 //----------------------------------------------------------------------------80
 uint32_t get_mouse(int* mouse_x, int* mouse_y) {
   SDL_PumpEvents();
@@ -99,12 +109,12 @@ uint32_t get_mouse(int* mouse_x, int* mouse_y) {
 //-----------------------------------
 // parse an sdl event into key flags
 //-----------------------------------
-// I: key flags  - unsigned int*
+// I: key flags  - uint32_t*
 //    event      - SDL_Event
 //    loop flag  - int*
 // O: exit code  - int
 //----------------------------------------------------------------------------80
-int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
+int event_parser(uint32_t* keys, SDL_Event event, int* loop) {
   switch(event.type) {
     // window events
     case SDL_WINDOWEVENT:
@@ -160,7 +170,7 @@ int event_parser(unsigned int* keys, SDL_Event event, int* loop) {
 //    key flags  - unsigned int
 // O: exit code  - int
 //----------------------------------------------------------------------------80
-int update_sprite_rb(sprite* s, unsigned int keys) {
+int update_sprite_rb(sprite* s, uint32_t keys) {
   float speed = 2.0;
   vec2 v = {0.0, 0.0};
   // apply vector based on keys. Remember, 0,0 is tl, h,w is br
@@ -211,7 +221,7 @@ int update_sprite_rb(sprite* s, unsigned int keys) {
 //    key flags  - unsigned int
 // O: exit code  - int
 //----------------------------------------------------------------------------80
-int update_sprite(sprite* s, unsigned int keys) {
+int update_sprite(sprite* s, uint32_t keys) {
   float speed = 5;
   switch(keys) {
     case UP:

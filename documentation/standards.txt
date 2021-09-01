@@ -1,0 +1,28 @@
+Coding Standards:
+
+  - Width: 80 char wide god dammit.
+
+  - Comments: Single comment (//) unless paragraph length description.
+
+  - Brackets: Inline.
+
+  - Functions: Should have a one liner description.
+               If the function is complex, there may be an additional notes section.
+
+  - Definitions: Live in header file.
+
+
+  Example function:
+
+  //-------------------------
+  // A descriptive one liner
+  //------------------------- ... -80
+  // complicated explanation
+  int foo(int x) {
+    // block description
+    if (x) {
+      return 1; // short note
+    } else {
+      return 0;
+    }
+  }

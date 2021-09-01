@@ -18,6 +18,7 @@
 
 // custom module
 #include "module/win.h"
+#include "module/shader.h"
 #include "module/phys.h"
 #include "module/sprite.h"
 #include "module/controller.h"
@@ -135,41 +136,11 @@ SDL_GLContext init_context(win_parameters* p) {
 // O: exit code   - int
 //------------------------------------------------------------------------------
 int init_win_shaders(win_parameters* p) {
-  GLint status;
-  char err_buf[512];
+  // bind vao
   glGenVertexArrays(1, &(p->vao));
   glBindVertexArray(p->vao);
-  // Compile vertex shader
-  const char* vert_shader_src = load_shader_code(p->vert_path);
-  p->vert_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(p->vert_shader, 1, &vert_shader_src, NULL);
-  glCompileShader(p->vert_shader);
-  glGetShaderiv(p->vert_shader, GL_COMPILE_STATUS, &status);
-  if (status != GL_TRUE) {
-    glGetShaderInfoLog(p->vert_shader, sizeof(err_buf), NULL, err_buf);
-    err_buf[sizeof(err_buf)-1] = '\0';
-    fprintf(stderr, "ERROR: Vertex shader compilation failed: %s\n", err_buf);
-    return 1;
-  }
-  // Compile fragment shader
-  const char* frag_shader_src = load_shader_code(p->frag_path);
-  p->frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(p->frag_shader, 1, &frag_shader_src, NULL);
-  glCompileShader(p->frag_shader);
-  glGetShaderiv(p->frag_shader, GL_COMPILE_STATUS, &status);
-  if (status != GL_TRUE) {
-    glGetShaderInfoLog(p->frag_shader, sizeof(err_buf), NULL, err_buf);
-    err_buf[sizeof(err_buf)-1] = '\0';
-    fprintf(stderr, "ERROR: Fragment shader compilation failed: %s\n", err_buf);
-    return 1;
-  }
-  // Link vertex and fragment shaders
-  p->shader_prog = glCreateProgram();
-  glAttachShader(p->shader_prog, p->vert_shader);
-  glAttachShader(p->shader_prog, p->frag_shader);
-  glBindFragDataLocation(p->shader_prog, 0, "out_Color");
-  glLinkProgram(p->shader_prog);
-  glUseProgram (p->shader_prog);
+  p->shader_prog = compile_shader(p->vert_path, p->frag_path);
+  glUseProgram(p->shader_prog);
   return 0;
 }
 
@@ -374,43 +345,6 @@ int win_render(win_parameters* p) {
   return 0;
 }
 
-//--------------------------------
-// loads shader code into a char*
-//--------------------------------
-// I: path        - char*
-// O: code buffer - char*
-//------------------------------------------------------------------------------
-char* load_shader_code(char* path) {
-  FILE *f;
-  long size;
-  char *buf;
-  // try to open it
-  if ((f = fopen(path, "r")) == NULL) {
-    fprintf(stderr, "Error: Couldn't open shader file. \n");
-    exit(EXIT_FAILURE);
-  }
-  // check file size
-  fseek(f , 0L , SEEK_END);
-  size = ftell(f);
-  rewind(f);
-  // allocate memory
-  buf = calloc(1, size + 1);
-  if (!buf) {
-    fclose(f);
-    fprintf(stderr, "ERROR: Memory allocation failed.\n");
-    exit(EXIT_FAILURE);
-  }
-  // copy to buf
-  if(1 != fread(buf , size, 1 , f)) {
-    fclose(f);
-    free(buf);
-    fprintf(stderr, "ERROR: Shader file read failed.\n");
-    exit(EXIT_FAILURE);
-  }
-  // close stream
-  fclose(f);
-  return buf;
-}
 
 //-------------------------
 // load an image with stbi
@@ -418,12 +352,12 @@ char* load_shader_code(char* path) {
 // I: texture data - tex_parameters*
 // O: exit code    - int
 //------------------------------------------------------------------------------
-int load_image(tex_parameters* p) {
-  p->pixel_buf = (char*)stbi_load(
-    p->path,
-    &(p->w),
-    &(p->h),
-    &(p->c),
+int load_image(tex_parameters* t) {
+  t->pixel_buf = (char*)stbi_load(
+    t->path,
+    &(t->w),
+    &(t->h),
+    &(t->c),
     STBI_rgb_alpha
   );
   return 0;

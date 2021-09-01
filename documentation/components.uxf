@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>490</x>
+      <y>820</y>
+      <w>260</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>texture.c
+--
+Responsibilities:
+- compile texture ptr
+- enable a texture
+- check errors
+--
++ u32 load_tex(idk a few things);
++ void use_tex(u32 texture);
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>880</x>
+      <y>760</y>
+      <w>180</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>*dependency</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>400</x>
+      <y>590</y>
+      <w>470</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>resources.c
+--
+Responsibilities:
+- load and organize shaders
+- load and organize textures (later convert to texture atlas)
+- organize sprite data
+--
++ u32* compile_shaders(const char* vert, const char* frag, int n);
++ u32* compile_textures(const char* tex, int n);
+bg=red
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>790</x>
+      <y>820</y>
+      <w>420</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>shader.c
+--
+Responsibilities:
+- compile shader ptr
+- enable a shader
+- check errors
+--
++ u32 compile_shader(const char* vert, const char* frag);
++ void use_shader(u32 shader);
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>620</x>
+      <y>740</y>
+      <w>390</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+</panel_attributes>
+    <additional_attributes>10.0;20.0;370.0;20.0;370.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>620</x>
+      <y>720</y>
+      <w>30</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>570</x>
+      <y>280</y>
+      <w>180</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>*Assume attached headers for each component</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>540</x>
+      <y>360</y>
+      <w>180</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>win.c
+--
+Responsibilities:
+- load the sdl window
+- update the sdl window
+--
++ int init_win();
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>170</x>
+      <y>820</y>
+      <w>290</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>sprite.c
+--
+Responsibilities:
+- data structure for sprites
+- functions to create and destroy sprites
+- draw the sprite
+--
+struct sprite {
+    u32 tex_ref;
+    vec2 pos, dim;  \\ tl, br
+    rigidbody* rb;
+    int rb_flag;
+} sprite;
+--
+sprite* create_sprite();
+void free_sprite(sprite*);
+void draw_sprite(sprite*);
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>740</y>
+      <w>350</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+</panel_attributes>
+    <additional_attributes>330.0;20.0;10.0;20.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>620</x>
+      <y>450</y>
+      <w>30</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=.&gt;
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>0</x>
+      <y>340</y>
+      <w>180</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>game.c
+--
+Responsibilities:
+- hold game state
+- update game logic
+--
++ int init_game();
++ void update_game();
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>960</x>
+      <y>350</y>
+      <w>140</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>--
+struct shaders {
+   gluint
+   textures
+}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1050</x>
+      <y>200</y>
+      <w>140</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>--
+struct resources {
+   shaders
+   textures
+}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1140</x>
+      <y>350</y>
+      <w>140</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>--
+struct resources {
+   shaders
+   textures
+}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1060</x>
+      <y>280</y>
+      <w>80</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;70.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1110</x>
+      <y>280</y>
+      <w>80</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;70.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>980</x>
+      <y>440</y>
+      <w>310</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>lets use these 3 structs and rewrite resource functions to be generic depending on which of these is passed to it</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
