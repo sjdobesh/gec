@@ -1,9 +1,11 @@
-# Photon
+# GEC
+## Game Engine in C
+
 2D Game Engine written in C & OpenGL.
 
 ### Usage:
 
-`./photon`
+`./gec`
 
 ### Dependencies:
 
@@ -25,7 +27,7 @@ cmake -S . -B build
 cd build
 make
 cd ../bin
-./photon
+./gec
 ```
 
 ### Goals:

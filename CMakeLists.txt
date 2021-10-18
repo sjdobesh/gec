@@ -46,5 +46,5 @@ find_package(GLEW   REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLEW_INCLUDE_DIRS} )
 
 
-add_executable(photon ${sources})
-target_link_libraries(photon OpenGL::GL GLEW::GLEW SDL2::Main m -static-libgcc -static-libstdc++)
+add_executable(gec ${sources})
+target_link_libraries(gec OpenGL::GL GLEW::GLEW SDL2::Main m -static-libgcc -static-libstdc++)
